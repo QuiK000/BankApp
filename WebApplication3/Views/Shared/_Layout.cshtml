@@ -1,46 +1,83 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@ViewData["Title"] - WebApplication3</title>
+    <title>@ViewData["Title"] - BankCredit</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
-    <link rel="stylesheet" href="~/WebApplication3.styles.css" asp-append-version="true"/>
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-        <div class="container-fluid">
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WebApplication3</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" asp-area="" asp-controller="Credits" asp-action="Index">
+                <i class="fas fa-university me-2"></i>
+                BankCredit
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        <a class="nav-link" asp-area="" asp-controller="Credits" asp-action="Index">
+                            <i class="fas fa-home me-1"></i>
+                            Головна
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        <a class="nav-link" asp-area="" asp-controller="Credits" asp-action="MyApplications">
+                            <i class="fas fa-list me-1"></i>
+                            Мої заявки
+                        </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 </header>
-<div class="container">
+
+<div class="container mt-4 mb-5">
     <main role="main" class="pb-3">
         @RenderBody()
     </main>
 </div>
 
-<footer class="border-top footer text-muted">
+<footer class="footer mt-auto py-4 bg-dark text-white">
     <div class="container">
-        &copy; 2025 - WebApplication3 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <div class="row">
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-university me-2"></i>
+                    BankCredit
+                </h5>
+                <p class="text-white-50">Ваш надійний партнер у світі фінансів</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="fw-bold mb-3">Контакти</h6>
+                <ul class="list-unstyled text-white-50">
+                    <li><i class="fas fa-phone me-2"></i>0 800 123 456</li>
+                    <li><i class="fas fa-envelope me-2"></i>info@bankcredit.ua</li>
+                    <li><i class="fas fa-map-marker-alt me-2"></i>м. Київ, вул. Банківська, 1</li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h6 class="fw-bold mb-3">Графік роботи</h6>
+                <p class="text-white-50">
+                    Пн-Пт: 9:00 - 18:00<br>
+                    Сб-Нд: Вихідний
+                </p>
+            </div>
+        </div>
+        <hr class="my-4 bg-white-50">
+        <div class="text-center text-white-50">
+            &copy; 2025 BankCredit. Всі права захищені.
+        </div>
     </div>
 </footer>
+
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>

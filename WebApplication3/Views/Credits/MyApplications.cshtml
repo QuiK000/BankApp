@@ -1,0 +1,155 @@
+﻿@model IEnumerable<WebApplication3.Models.CreditApplication>
+
+@{
+    ViewData["Title"] = "Мої заявки";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-list-alt text-primary me-2"></i>
+            Мої заявки на кредит
+        </h1>
+        <a asp-action="Index" class="btn btn-outline-primary">
+            <i class="fas fa-plus me-2"></i>
+            Нова заявка
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">У вас ще немає заявок</h4>
+            <p class="text-muted mb-4">Оберіть кредитний продукт та подайте заявку</p>
+            <a asp-action="Index" class="btn btn-primary btn-lg">
+                <i class="fas fa-search me-2"></i>
+                Переглянути кредити
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var app in Model)
+            {
+                <div class="col-lg-6 mb-4">
+                    <div class="card application-card shadow-hover h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">
+                                <i class="fas fa-hashtag me-1"></i>
+                                Заявка №@app.Id
+                            </span>
+                            <span class="badge @(app.Status == "Нова заявка" ? "bg-info" : app.Status == "Схвалено" ? "bg-success" : "bg-warning")">
+                                @app.Status
+                            </span>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="credit-icon-small me-3">
+                                    <i class="fas @app.Credit.IconClass fa-2x text-primary"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">@app.Credit.Name</h5>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        @app.ApplicationDate.ToString("dd.MM.yyyy HH:mm")
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <div class="stat-box">
+                                        <div class="text-muted small mb-1">Сума</div>
+                                        <div class="fw-bold text-primary">@app.Amount.ToString("N0") грн</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-box">
+                                        <div class="text-muted small mb-1">Термін</div>
+                                        <div class="fw-bold text-primary">@app.TermMonths міс.</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-box">
+                                        <div class="text-muted small mb-1">Платіж</div>
+                                        <div class="fw-bold text-success">@app.MonthlyPayment.ToString("N0") грн</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="applicant-info p-3 bg-light rounded">
+                                <div class="mb-2">
+                                    <i class="fas fa-user me-2 text-muted"></i>
+                                    <strong>@app.CustomerName</strong>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-phone me-2 text-muted"></i>
+                                    @app.Phone
+                                </div>
+                                <div>
+                                    <i class="fas fa-envelope me-2 text-muted"></i>
+                                    @app.Email
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-percent me-1"></i>
+                                    Ставка: @app.Credit.InterestRate%
+                                </small>
+                                <a asp-action="Details" asp-route-id="@app.CreditId" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Деталі кредиту
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <div class="alert alert-info border-0 shadow-sm mt-4">
+            <div class="d-flex">
+                <div class="me-3">
+                    <i class="fas fa-info-circle fa-2x"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-2">Інформація про статуси</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <span class="badge bg-info me-2">Нова заявка</span>
+                            <small>- на розгляді</small>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="badge bg-success me-2">Схвалено</span>
+                            <small>- заявку схвалено</small>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="badge bg-warning me-2">Очікування</span>
+                            <small>- потрібні документи</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .application-card {
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .application-card:hover {
+        transform: translateY(-5px);
+    }
+</style>

@@ -1,0 +1,226 @@
+﻿@model WebApplication3.Models.CreditApplication
+
+@{
+    ViewData["Title"] = "Заявка на кредит";
+    var credit = ViewBag.Credit as WebApplication3.Models.Credit;
+}
+
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Index">Кредити</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="Details" asp-route-id="@credit.Id">@credit.Name</a>
+            </li>
+            <li class="breadcrumb-item active">Заявка</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Заявка на отримання кредиту
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="alert alert-info border-0 mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Заповніть форму нижче, і наш менеджер зв'яжеться з вами найближчим часом
+                    </div>
+
+                    <form asp-action="Apply" method="post">
+                        <input type="hidden" asp-for="CreditId" />
+                        
+                        <h5 class="fw-bold mb-3 text-primary">
+                            <i class="fas fa-user me-2"></i>
+                            Особисті дані
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="CustomerName" class="form-label"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input asp-for="CustomerName" class="form-control" placeholder="Іванов Іван Іванович" />
+                                </div>
+                                <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-phone"></i>
+                                    </span>
+                                    <input asp-for="Phone" class="form-control" placeholder="+380501234567" />
+                                </div>
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label asp-for="Email" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input asp-for="Email" class="form-control" placeholder="example@email.com" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="fw-bold mb-3 text-primary">
+                            <i class="fas fa-money-bill-wave me-2"></i>
+                            Параметри кредиту
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Amount" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="Amount" type="number" class="form-control" 
+                                           id="amountInput"
+                                           min="@credit.MinAmount" 
+                                           max="@credit.MaxAmount" 
+                                           step="1000" />
+                                    <span class="input-group-text">грн</span>
+                                </div>
+                                <small class="text-muted">
+                                    Від @credit.MinAmount.ToString("N0") до @credit.MaxAmount.ToString("N0") грн
+                                </small>
+                                <span asp-validation-for="Amount" class="text-danger small d-block"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label asp-for="TermMonths" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="TermMonths" type="number" class="form-control" 
+                                           id="termInput"
+                                           min="@credit.MinTermMonths" 
+                                           max="@credit.MaxTermMonths" />
+                                    <span class="input-group-text">міс.</span>
+                                </div>
+                                <small class="text-muted">
+                                    Від @credit.MinTermMonths до @credit.MaxTermMonths місяців
+                                </small>
+                                <span asp-validation-for="TermMonths" class="text-danger small d-block"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a asp-action="Details" asp-route-id="@credit.Id" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Скасувати
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Відправити заявку
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card bg-light border-0 mb-3 sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas @credit.IconClass text-primary me-2"></i>
+                        @credit.Name
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Процентна ставка:</span>
+                            <strong class="text-success">@credit.InterestRate%</strong>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Сума кредиту:</span>
+                            <strong id="displayAmount">@credit.MinAmount.ToString("N0") грн</strong>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Термін:</span>
+                            <strong id="displayTerm">@credit.MinTermMonths міс.</strong>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-center p-3 bg-white rounded">
+                        <small class="text-muted d-block mb-1">Орієнтовний щомісячний платіж:</small>
+                        <div class="fs-3 fw-bold text-primary" id="monthlyPayment">
+                            -
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning border-0 mt-3 mb-0">
+                        <small>
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Остаточна сума платежу визначається при укладанні договору
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        const interestRate = @credit.InterestRate;
+        const amountInput = document.getElementById('amountInput');
+        const termInput = document.getElementById('termInput');
+        const displayAmount = document.getElementById('displayAmount');
+        const displayTerm = document.getElementById('displayTerm');
+        const monthlyPayment = document.getElementById('monthlyPayment');
+        
+        function calculatePayment() {
+            const amount = parseFloat(amountInput.value) || 0;
+            const term = parseInt(termInput.value) || 0;
+            
+            displayAmount.textContent = amount.toLocaleString('uk-UA') + ' грн';
+            displayTerm.textContent = term + ' міс.';
+            
+            if (amount > 0 && term > 0) {
+                const monthlyRate = interestRate / 100 / 12;
+                let payment;
+                
+                if (monthlyRate === 0) {
+                    payment = amount / term;
+                } else {
+                    payment = amount * monthlyRate * Math.pow(1 + monthlyRate, term) 
+                        / (Math.pow(1 + monthlyRate, term) - 1);
+                }
+                
+                monthlyPayment.textContent = payment.toLocaleString('uk-UA', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) + ' грн';
+            } else {
+                monthlyPayment.textContent = '-';
+            }
+        }
+        
+        amountInput.addEventListener('input', calculatePayment);
+        termInput.addEventListener('input', calculatePayment);
+        
+        // Початковий розрахунок
+        calculatePayment();
+    </script>
+}

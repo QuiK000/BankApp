@@ -1,0 +1,166 @@
+﻿@model WebApplication3.Models.CreditApplication
+
+@{
+    ViewData["Title"] = "Заявка прийнята";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5 animate-fade-in">
+                <div class="success-icon mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h1 class="display-4 fw-bold text-success mb-3">Заявку прийнято!</h1>
+                <p class="lead text-muted">
+                    Дякуємо за звернення до BankCredit
+                </p>
+            </div>
+            
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Деталі вашої заявки
+                    </h5>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <small class="text-muted d-block mb-1">
+                                    <i class="fas fa-hashtag me-1"></i>
+                                    Номер заявки
+                                </small>
+                                <strong class="fs-5">#@Model.Id</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <small class="text-muted d-block mb-1">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Дата подання
+                                </small>
+                                <strong class="fs-5">@Model.ApplicationDate.ToString("dd.MM.yyyy HH:mm")</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="fw-bold mb-3 text-primary">
+                        <i class="fas fa-user me-2"></i>
+                        Контактна інформація
+                    </h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted d-block">Ім'я</small>
+                            <strong>@Model.CustomerName</strong>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted d-block">Телефон</small>
+                            <strong>@Model.Phone</strong>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted d-block">Email</small>
+                            <strong>@Model.Email</strong>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="fw-bold mb-3 text-primary">
+                        <i class="fas fa-money-bill-wave me-2"></i>
+                        Параметри кредиту
+                    </h6>
+                    
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-2">Тип кредиту</small>
+                                <div class="fw-bold">@Model.Credit.Name</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-2">Сума</small>
+                                <div class="fw-bold text-primary">@Model.Amount.ToString("N0") грн</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-2">Термін</small>
+                                <div class="fw-bold text-primary">@Model.TermMonths міс.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-2">Щомісячний платіж</small>
+                                <div class="fw-bold text-success">@Model.MonthlyPayment.ToString("N2") грн</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-success border-0 mt-3">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-2">Що далі?</h6>
+                                <ul class="mb-0 ps-3">
+                                    <li>Наш менеджер зв'яжеться з вами протягом 24 годин</li>
+                                    <li>Підготуйте необхідні документи для верифікації</li>
+                                    <li>Очікуйте на рішення по вашій заявці</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a asp-action="Index" class="btn btn-primary btn-lg">
+                    <i class="fas fa-home me-2"></i>
+                    На головну
+                </a>
+                <a asp-action="MyApplications" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-list me-2"></i>
+                    Мої заявки
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .success-icon i {
+        animation: scaleIn 0.5s ease-out;
+    }
+    
+    @@keyframes scaleIn {
+        from {
+            transform: scale(0);
+        }
+        to {
+            transform: scale(1);
+        }
+    }
+</style>
