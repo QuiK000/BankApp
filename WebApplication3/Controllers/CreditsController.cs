@@ -67,6 +67,7 @@ public class CreditsController(BankContext context) : Controller
     {
         if (ModelState.IsValid)
         {
+            application.Id = 0;
             application.ApplicationDate = DateTime.Now;
             application.Status = "Нова заявка";
 
