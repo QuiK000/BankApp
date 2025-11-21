@@ -1,0 +1,112 @@
+﻿@model WebApplication3.Models.Customer
+
+@{
+    ViewData["Title"] = "Видалити клієнта";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-danger text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Підтвердження видалення
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="alert alert-danger border-0 mb-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-exclamation-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-2">Увага!</h6>
+                                <p class="mb-0">
+                                    Ви дійсно бажаєте видалити клієнта <strong>@Model.FullName</strong>?
+                                    Цю дію неможливо буде відмінити!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">Інформація про клієнта:</h6>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <strong>Ім'я:</strong>
+                                </div>
+                                <div class="col-md-8">
+                                    @Model.FullName
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <strong>Телефон:</strong>
+                                </div>
+                                <div class="col-md-8">
+                                    @Model.Phone
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <strong>Email:</strong>
+                                </div>
+                                <div class="col-md-8">
+                                    @Model.Email
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <strong>Кількість кредитів:</strong>
+                                </div>
+                                <div class="col-md-8">
+                                    <span class="badge bg-primary">@Model.CustomerCredits.Count</span>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Дата реєстрації:</strong>
+                                </div>
+                                <div class="col-md-8">
+                                    @Model.RegistrationDate.ToString("dd.MM.yyyy")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    @if (Model.CustomerCredits.Any())
+                    {
+                        <div class="alert alert-warning border-0 mb-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Увага:</strong> У клієнта є @Model.CustomerCredits.Count активних кредитів. 
+                            Їх також буде видалено разом з клієнтом.
+                        </div>
+                    }
+                    
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>
+                                Скасувати
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-trash me-2"></i>
+                                Підтвердити видалення
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

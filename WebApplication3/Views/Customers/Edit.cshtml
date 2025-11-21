@@ -1,0 +1,252 @@
+﻿@model WebApplication3.Models.Customer
+
+@{
+    ViewData["Title"] = "Редагувати клієнта";
+    var allCredits = ViewBag.Credits as List<Credit>;
+    var allServices = ViewBag.Services as List<Service>;
+    var selectedCreditIds = ViewBag.SelectedCreditIds as List<int>;
+    var selectedServiceIds = ViewBag.SelectedServiceIds as List<int>;
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>
+                        Редагувати дані клієнта
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="RegistrationDate" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label"></label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Phone" class="form-label"></label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="TaxNumber" class="form-label"></label>
+                            <input asp-for="TaxNumber" class="form-control" maxlength="10" />
+                            <span asp-validation-for="TaxNumber" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="DateOfBirth" class="form-label"></label>
+                            <input asp-for="DateOfBirth" class="form-control" type="date" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Address" class="form-label"></label>
+                            <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="Address" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label"></label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="Активний">Активний</option>
+                                <option value="Неактивний">Неактивний</option>
+                                <option value="Заблокований">Заблокований</option>
+                            </select>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Вибір кредитів -->
+                        <h6 class="fw-bold mb-3 text-primary">
+                            <i class="fas fa-credit-card me-2"></i>
+                            Вибрати кредити
+                        </h6>
+                        
+                        <div class="mb-3">
+                            @if (allCredits != null && allCredits.Any())
+                            {
+                                @foreach (var credit in allCredits)
+                                {
+                                    <div class="form-check mb-2 p-3 bg-light rounded">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="selectedCredits" 
+                                               value="@credit.Id" 
+                                               id="credit_@credit.Id"
+                                               @(selectedCreditIds != null && selectedCreditIds.Contains(credit.Id) ? "checked" : "") />
+                                        <label class="form-check-label w-100" for="credit_@credit.Id">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>
+                                                        <i class="fas @credit.IconClass text-primary me-1"></i>
+                                                        @credit.Name
+                                                    </strong>
+                                                    <div class="small text-muted">
+                                                        @credit.InterestRate% | @credit.MinAmount.ToString("N0") - @credit.MaxAmount.ToString("N0") грн
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Вибір послуг -->
+                        <h6 class="fw-bold mb-3 text-primary">
+                            <i class="fas fa-concierge-bell me-2"></i>
+                            Вибрати послуги
+                        </h6>
+                        
+                        <div class="mb-3">
+                            @if (allServices != null && allServices.Any())
+                            {
+                                @foreach (var service in allServices)
+                                {
+                                    <div class="form-check mb-2 p-3 bg-light rounded">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="selectedServices" 
+                                               value="@service.Id" 
+                                               id="service_@service.Id"
+                                               @(selectedServiceIds != null && selectedServiceIds.Contains(service.Id) ? "checked" : "") />
+                                        <label class="form-check-label w-100" for="service_@service.Id">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>
+                                                        <i class="fas @service.IconClass text-primary me-1"></i>
+                                                        @service.Name
+                                                    </strong>
+                                                    <div class="small text-muted">@service.Description</div>
+                                                </div>
+                                                <div class="text-success fw-bold">
+                                                    @if (service.PercentageRate.HasValue)
+                                                    {
+                                                        <span>@service.PercentageRate%</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>@service.Price.ToString("N0") грн</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>
+                                Зберегти зміни
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Скасувати
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-7">
+            <div class="alert alert-info border-0 shadow-sm mb-4">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-info-circle fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-2">Як редагувати кредити та послуги?</h6>
+                        <ul class="mb-0 ps-3">
+                            <li>Виберіть потрібні кредити зі списку</li>
+                            <li>Додайте додаткові послуги для клієнта</li>
+                            <li>Зміни збережуться після натискання кнопки "Зберегти"</li>
+                            <li>Можна вибрати декілька кредитів одночасно</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Поточні кредити -->
+            @if (Model.CustomerCredits.Any())
+            {
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-history me-2 text-primary"></i>
+                            Поточні активні кредити
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            @foreach (var cc in Model.CustomerCredits)
+                            {
+                                <div class="list-group-item border-0 mb-2 bg-light rounded">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>@cc.Credit.Name</strong>
+                                            <div class="small text-muted">
+                                                @cc.ApprovedAmount.ToString("N0") грн на @cc.TermMonths міс.
+                                            </div>
+                                        </div>
+                                        <span class="badge bg-success">@cc.Status</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            <!-- Поточні послуги -->
+            @if (Model.CustomerServices.Any())
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-list-check me-2 text-primary"></i>
+                            Підключені послуги
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            @foreach (var cs in Model.CustomerServices)
+                            {
+                                <div class="list-group-item border-0 mb-2 bg-light rounded">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>@cs.Service.Name</strong>
+                                            <div class="small text-muted">@cs.TotalCost.ToString("N2") грн</div>
+                                        </div>
+                                        <span class="badge bg-info">@cs.Status</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

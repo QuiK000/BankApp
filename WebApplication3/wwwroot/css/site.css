@@ -222,6 +222,8 @@ body {
 .footer {
   background: #1e293b;
   margin-top: 5rem;
+  position: absolute;
+  width: 100%;
 }
 
 /* Breadcrumb */

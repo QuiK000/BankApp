@@ -1,0 +1,213 @@
+﻿@model WebApplication3.Models.Customer
+
+@{
+    ViewData["Title"] = $"Клієнт: {Model.FullName}";
+}
+
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Index">Клієнти</a>
+            </li>
+            <li class="breadcrumb-item active">@Model.FullName</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="avatar-large mb-3">
+                        <i class="fas fa-user fa-4x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">@Model.FullName</h4>
+                    <span class="badge @(Model.Status == "Активний" ? "bg-success" : "bg-secondary") mb-3">
+                        @Model.Status
+                    </span>
+                    
+                    <hr>
+                    
+                    <div class="text-start">
+                        <div class="info-item mb-2">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            <strong>Телефон:</strong><br>
+                            <span class="ms-4">@Model.Phone</span>
+                        </div>
+                        
+                        <div class="info-item mb-2">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <strong>Email:</strong><br>
+                            <span class="ms-4">@Model.Email</span>
+                        </div>
+                        
+                        <div class="info-item mb-2">
+                            <i class="fas fa-id-card text-primary me-2"></i>
+                            <strong>ІПН:</strong><br>
+                            <span class="ms-4">@Model.TaxNumber</span>
+                        </div>
+                        
+                        <div class="info-item mb-2">
+                            <i class="fas fa-birthday-cake text-primary me-2"></i>
+                            <strong>Дата народження:</strong><br>
+                            <span class="ms-4">@Model.DateOfBirth.ToString("dd.MM.yyyy")</span>
+                        </div>
+                        
+                        <div class="info-item mb-2">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>Адреса:</strong><br>
+                            <span class="ms-4">@Model.Address</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="fas fa-calendar-check text-primary me-2"></i>
+                            <strong>Дата реєстрації:</strong><br>
+                            <span class="ms-4">@Model.RegistrationDate.ToString("dd.MM.yyyy")</span>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                            <i class="fas fa-edit me-2"></i>
+                            Редагувати
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Назад до списку
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <!-- Кредити клієнта -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Кредити клієнта (@Model.CustomerCredits.Count)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.CustomerCredits.Any())
+                    {
+                        <div class="row">
+                            @foreach (var cc in Model.CustomerCredits)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100 border-0 bg-light">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="fw-bold mb-0">
+                                                    <i class="fas @cc.Credit.IconClass text-primary me-1"></i>
+                                                    @cc.Credit.Name
+                                                </h6>
+                                                <span class="badge @(cc.Status == "Активний" ? "bg-success" : cc.Status == "Погашений" ? "bg-secondary" : "bg-danger")">
+                                                    @cc.Status
+                                                </span>
+                                            </div>
+                                            
+                                            <hr class="my-2">
+                                            
+                                            <div class="small mb-1">
+                                                <strong>Сума:</strong> @cc.ApprovedAmount.ToString("N0") грн
+                                            </div>
+                                            <div class="small mb-1">
+                                                <strong>Термін:</strong> @cc.TermMonths міс.
+                                            </div>
+                                            <div class="small mb-1">
+                                                <strong>Ставка:</strong> @cc.InterestRate%
+                                            </div>
+                                            <div class="small mb-1">
+                                                <strong>Щомісячний платіж:</strong> 
+                                                <span class="text-success fw-bold">@cc.MonthlyPayment.ToString("N2") грн</span>
+                                            </div>
+                                            <div class="small mb-1">
+                                                <strong>Залишок боргу:</strong> 
+                                                <span class="text-danger fw-bold">@cc.RemainingDebt.ToString("N0") грн</span>
+                                            </div>
+                                            <div class="small">
+                                                <strong>Дата видачі:</strong> @cc.IssueDate.ToString("dd.MM.yyyy")
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p>У клієнта ще немає активних кредитів</p>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Послуги клієнта -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-concierge-bell me-2"></i>
+                        Підключені послуги (@Model.CustomerServices.Count)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.CustomerServices.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var cs in Model.CustomerServices)
+                            {
+                                <div class="list-group-item border-0 bg-light mb-2 rounded">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <i class="fas @cs.Service.IconClass text-primary me-2"></i>
+                                                @cs.Service.Name
+                                            </h6>
+                                            <small class="text-muted">@cs.Service.Description</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold text-success mb-1">@cs.TotalCost.ToString("N2") грн</div>
+                                            <span class="badge @(cs.Status == "Активна" ? "bg-success" : "bg-secondary")">
+                                                @cs.Status
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="small text-muted mt-2">
+                                        Підключено: @cs.ActivationDate.ToString("dd.MM.yyyy")
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-box-open fa-3x mb-3"></i>
+                            <p>Додаткові послуги не підключені</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-large {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin: 0 auto;
+    }
+</style>
