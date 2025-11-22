@@ -21,4 +21,6 @@ public class Credit
     public string Requirements { get; set; } = string.Empty;
 
     public string IconClass { get; set; } = "fa-money-bill-wave";
+    
+    public virtual ICollection<CustomerCredit> CustomerCredits { get; set; } = new List<CustomerCredit>();
 }
