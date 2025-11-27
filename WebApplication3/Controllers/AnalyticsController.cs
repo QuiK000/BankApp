@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication3.db;
 using WebApplication3.Models;
+using System.Text;
 
 namespace WebApplication3.Controllers
 {
@@ -22,7 +23,6 @@ namespace WebApplication3.Controllers
             var today = DateTime.Now.Date;
             var startOfWeek = today.AddDays(-(int)today.DayOfWeek + 1);
             var startOfMonth = new DateTime(today.Year, today.Month, 1);
-            var startOfYear = new DateTime(today.Year, 1, 1);
 
             var model = new AnalyticsDashboardViewModel
             {
@@ -144,7 +144,53 @@ namespace WebApplication3.Controllers
             return View(model);
         }
 
-        // API: Експорт даних
+        // GET: Analytics/Scoring
+        public async Task<IActionResult> Scoring()
+        {
+            var scores = await _context.CreditScores
+                .Include(cs => cs.User)
+                .OrderByDescending(cs => cs.CalculationDate)
+                .Take(100)
+                .ToListAsync();
+
+            var stats = new ScoringStatisticsViewModel
+            {
+                TotalScores = scores.Count,
+                AverageScore = scores.Any() ? (int)scores.Average(s => s.TotalScore) : 0,
+                AverageDefaultProbability = scores.Any() ? scores.Average(s => s.DefaultProbability) : 0,
+                RatingDistribution = scores
+                    .GroupBy(s => s.Rating)
+                    .ToDictionary(g => g.Key, g => g.Count()),
+                RecentScores = scores
+            };
+
+            return View(stats);
+        }
+
+        // GET: Analytics/Blacklist
+        public async Task<IActionResult> BlacklistStats()
+        {
+            var entries = await _context.BlacklistEntries.ToListAsync();
+
+            var stats = new BlacklistStatisticsViewModel
+            {
+                TotalEntries = entries.Count,
+                ActiveEntries = entries.Count(e => e.IsActive),
+                RemovedEntries = entries.Count(e => !e.IsActive),
+                TotalDebt = entries.Sum(e => e.DebtAmount ?? 0),
+                ReasonDistribution = entries
+                    .GroupBy(e => e.Reason)
+                    .ToDictionary(g => g.Key.ToString(), g => g.Count()),
+                RecentEntries = entries
+                    .OrderByDescending(e => e.AddedDate)
+                    .Take(10)
+                    .ToList()
+            };
+
+            return View(stats);
+        }
+
+        // POST: Analytics/ExportData
         [HttpPost]
         public async Task<IActionResult> ExportData(string reportType, DateTime? startDate, DateTime? endDate)
         {
@@ -157,9 +203,8 @@ namespace WebApplication3.Controllers
                 .Where(a => a.ApplicationDate >= start && a.ApplicationDate <= end)
                 .ToListAsync();
 
-            // Генерація CSV
             var csv = GenerateCSV(data, reportType);
-            var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+            var bytes = Encoding.UTF8.GetBytes(csv);
             
             return File(bytes, "text/csv", $"Export_{reportType}_{start:yyyyMMdd}_{end:yyyyMMdd}.csv");
         }
@@ -193,20 +238,9 @@ namespace WebApplication3.Controllers
 
         private async Task<List<ManagerPerformance>> GetTopManagers()
         {
-            var managers = await _context.CreditApplications
-                .Where(a => a.StatusChangeDate.HasValue && !string.IsNullOrEmpty(a.ManagerComment))
-                .GroupBy(a => a.ManagerComment)
-                .Select(g => new ManagerPerformance
-                {
-                    ManagerName = "Менеджер",
-                    ProcessedApplications = g.Count(),
-                    ApprovedApplications = g.Count(a => a.Status == ApplicationStatus.Approved)
-                })
-                .OrderByDescending(m => m.ProcessedApplications)
-                .Take(5)
-                .ToListAsync();
-
-            return managers;
+            // В реальному додатку тут би була логіка з реальними менеджерами
+            // Поки що використовуємо заглушку
+            return new List<ManagerPerformance>();
         }
 
         private async Task<Dictionary<int, int>> GetPeakHours()
@@ -303,7 +337,7 @@ namespace WebApplication3.Controllers
 
         private string GenerateCSV(List<CreditApplication> data, string reportType)
         {
-            var csv = new System.Text.StringBuilder();
+            var csv = new StringBuilder();
             csv.AppendLine("ID,Дата,Клієнт,Кредит,Сума,Термін,Статус,Email,Телефон");
 
             foreach (var app in data)
@@ -375,6 +409,25 @@ namespace WebApplication3.Controllers
         public Dictionary<int, int> HourlyStats { get; set; } = new();
         public Dictionary<string, int> WeekdayStats { get; set; } = new();
         public List<MonthlyTrend> MonthlyTrends { get; set; } = new();
+    }
+
+    public class ScoringStatisticsViewModel
+    {
+        public int TotalScores { get; set; }
+        public int AverageScore { get; set; }
+        public decimal AverageDefaultProbability { get; set; }
+        public Dictionary<string, int> RatingDistribution { get; set; } = new();
+        public List<CreditScore> RecentScores { get; set; } = new();
+    }
+
+    public class BlacklistStatisticsViewModel
+    {
+        public int TotalEntries { get; set; }
+        public int ActiveEntries { get; set; }
+        public int RemovedEntries { get; set; }
+        public decimal TotalDebt { get; set; }
+        public Dictionary<string, int> ReasonDistribution { get; set; } = new();
+        public List<BlacklistEntry> RecentEntries { get; set; } = new();
     }
 
     public class DailyStat

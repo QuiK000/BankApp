@@ -16,11 +16,14 @@ namespace WebApplication3.db
         public DbSet<Service> Services { get; set; }
         public DbSet<CustomerCredit> CustomerCredits { get; set; }
         public DbSet<CustomerService> CustomerServices { get; set; }
+        
+        public DbSet<CreditScore> CreditScores { get; set; }
+        public DbSet<BlacklistEntry> BlacklistEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
+
             modelBuilder.Entity<Credit>()
                 .Property(c => c.InterestRate)
                 .HasPrecision(5, 2);
@@ -41,18 +44,6 @@ namespace WebApplication3.db
                 .Property(cc => cc.RemainingDebt)
                 .HasPrecision(18, 2);
             
-            modelBuilder.Entity<CustomerCredit>()
-                .HasOne(cc => cc.Customer)
-                .WithMany(c => c.CustomerCredits)
-                .HasForeignKey(cc => cc.CustomerId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<CustomerCredit>()
-                .HasOne(cc => cc.Credit)
-                .WithMany(cr => cr.CustomerCredits)
-                .HasForeignKey(cc => cc.CreditId)
-                .OnDelete(DeleteBehavior.Cascade);
-            
             modelBuilder.Entity<Service>()
                 .Property(s => s.Price)
                 .HasPrecision(18, 2);
@@ -64,6 +55,30 @@ namespace WebApplication3.db
             modelBuilder.Entity<CustomerService>()
                 .Property(cs => cs.TotalCost)
                 .HasPrecision(18, 2);
+            
+            modelBuilder.Entity<CreditScore>()
+                .Property(cs => cs.DefaultProbability)
+                .HasPrecision(5, 2);
+
+            modelBuilder.Entity<CreditScore>()
+                .Property(cs => cs.RecommendedMaxAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<BlacklistEntry>()
+                .Property(b => b.DebtAmount)
+                .HasPrecision(18, 2);
+            
+            modelBuilder.Entity<CustomerCredit>()
+                .HasOne(cc => cc.Customer)
+                .WithMany(c => c.CustomerCredits)
+                .HasForeignKey(cc => cc.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CustomerCredit>()
+                .HasOne(cc => cc.Credit)
+                .WithMany(cr => cr.CustomerCredits)
+                .HasForeignKey(cc => cc.CreditId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CustomerService>()
                 .HasOne(cs => cs.Customer)
@@ -82,7 +97,13 @@ namespace WebApplication3.db
                 .WithMany(u => u.CreditApplications)
                 .HasForeignKey(ca => ca.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
-            
+
+            modelBuilder.Entity<CreditScore>()
+                .HasOne(cs => cs.User)
+                .WithMany()
+                .HasForeignKey(cs => cs.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Credit>().HasData(
                 new Credit
                 {

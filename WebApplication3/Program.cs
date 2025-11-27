@@ -36,13 +36,12 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
-// Додавання сервісів
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<ICreditScoringService, CreditScoringService>();
 
 var app = builder.Build();
 
-// Ініціалізація ролей та адміністратора
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
