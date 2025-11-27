@@ -1,0 +1,358 @@
+﻿@model WebApplication3.Controllers.TimeAnalysisViewModel
+
+@{
+    ViewData["Title"] = "Часовий аналіз";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-clock text-success me-2"></i>
+            Часовий аналіз заявок
+        </h1>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Назад
+        </a>
+    </div>
+
+    <!-- Фільтр періоду -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                Вибір періоду
+            </h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="TimeAnalysis" method="get">
+                <div class="row align-items-end">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Дата від</label>
+                        <input type="date" name="startDate" class="form-control" 
+                               value="@Model.StartDate.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Дата до</label>
+                        <input type="date" name="endDate" class="form-control" 
+                               value="@Model.EndDate.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>
+                            Застосувати
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Денна статистика -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-chart-line text-primary me-2"></i>
+                Денна динаміка (@Model.StartDate.ToString("dd.MM.yyyy") - @Model.EndDate.ToString("dd.MM.yyyy"))
+            </h5>
+        </div>
+        <div class="card-body">
+            <canvas id="dailyChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Статистика по годинах та дням тижня -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        Години пік (розподіл по годинах)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="hourlyChart" height="300"></canvas>
+                    
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-3">Топ-5 найактивніших годин:</h6>
+                        @foreach (var hour in Model.HourlyStats.OrderByDescending(x => x.Value).Take(5))
+                        {
+                            var percentage = Model.HourlyStats.Values.Sum() > 0 ? (hour.Value * 100.0 / Model.HourlyStats.Values.Sum()) : 0;
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span><i class="far fa-clock me-2"></i><strong>@hour.Key:00</strong></span>
+                                    <span class="text-muted">@hour.Value заявок (@percentage.ToString("F1")%)</span>
+                                </div>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-warning" style="width: @percentage%">
+                                        @hour.Value
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-week text-info me-2"></i>
+                        Розподіл по днях тижня
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="weekdayChart" height="300"></canvas>
+                    
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-3">Статистика по днях:</h6>
+                        @foreach (var day in Model.WeekdayStats.OrderByDescending(x => x.Value))
+                        {
+                            var percentage = Model.WeekdayStats.Values.Sum() > 0 ? (day.Value * 100.0 / Model.WeekdayStats.Values.Sum()) : 0;
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span><i class="fas fa-calendar-day me-2"></i><strong>@GetDayName(day.Key)</strong></span>
+                                    <span class="text-muted">@day.Value заявок (@percentage.ToString("F1")%)</span>
+                                </div>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-info" style="width: @percentage%">
+                                        @day.Value
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Місячні тренди -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-chart-area text-success me-2"></i>
+                Місячні тренди
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Місяць</th>
+                            <th class="text-center">Заявок</th>
+                            <th class="text-end">Загальна сума</th>
+                            <th class="text-center">% Схвалення</th>
+                            <th class="text-center">Тренд</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.MonthlyTrends.Count; i++)
+                        {
+                            var trend = Model.MonthlyTrends[i];
+                            var prevTrend = i > 0 ? Model.MonthlyTrends[i - 1] : null;
+                            var changePercent = prevTrend != null && prevTrend.Applications > 0 
+                                ? ((trend.Applications - prevTrend.Applications) * 100.0 / prevTrend.Applications) 
+                                : 0;
+                            
+                            <tr>
+                                <td><strong>@trend.Month</strong></td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary">@trend.Applications</span>
+                                </td>
+                                <td class="text-end">
+                                    <strong class="text-success">@trend.Amount.ToString("N0") ₴</strong>
+                                </td>
+                                <td class="text-center">
+                                    <div class="progress" style="width: 100px; height: 20px; margin: 0 auto;">
+                                        <div class="progress-bar @GetProgressBarClass(trend.ApprovalRate)" 
+                                             style="width: @trend.ApprovalRate%">
+                                            @trend.ApprovalRate.ToString("F1")%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @if (prevTrend != null)
+                                    {
+                                        if (changePercent > 0)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-arrow-up"></i> @changePercent.ToString("F1")%
+                                            </span>
+                                        }
+                                        else if (changePercent < 0)
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-arrow-down"></i> @Math.Abs(changePercent).ToString("F1")%
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-minus"></i> 0%
+                                            </span>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insights -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-success border-0 shadow-sm">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-3">Аналітика періоду:</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Найактивніший день тижня:</strong><br>
+                                @Model.WeekdayStats.OrderByDescending(x => x.Value).FirstOrDefault().Key
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Пікова година:</strong><br>
+                                @Model.HourlyStats.OrderByDescending(x => x.Value).FirstOrDefault().Key:00
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Середньо заявок за день:</strong><br>
+                                @(Model.DailyStats.Any() ? Model.DailyStats.Average(x => x.Count).ToString("F1") : "0")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetDayName(string day)
+    {
+        return day switch
+        {
+            "Monday" => "Понеділок",
+            "Tuesday" => "Вівторок",
+            "Wednesday" => "Середа",
+            "Thursday" => "Четвер",
+            "Friday" => "П'ятниця",
+            "Saturday" => "Субота",
+            "Sunday" => "Неділя",
+            _ => day
+        };
+    }
+
+    string GetProgressBarClass(double rate)
+    {
+        if (rate >= 70) return "bg-success";
+        if (rate >= 50) return "bg-warning";
+        return "bg-danger";
+    }
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Денний графік
+        const dailyLabels = @Html.Raw(Json.Serialize(Model.DailyStats.Select(x => x.Date.ToString("dd.MM"))));
+        const dailyData = @Html.Raw(Json.Serialize(Model.DailyStats.Select(x => x.Count)));
+        const dailyApproved = @Html.Raw(Json.Serialize(Model.DailyStats.Select(x => x.Approved)));
+
+        const ctx1 = document.getElementById('dailyChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: dailyLabels,
+                datasets: [{
+                    label: 'Всього заявок',
+                    data: dailyData,
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Схвалено',
+                    data: dailyApproved,
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+
+        // Погодинний графік
+        const hourlyLabels = @Html.Raw(Json.Serialize(Model.HourlyStats.Keys.Select(x => x + ":00")));
+        const hourlyData = @Html.Raw(Json.Serialize(Model.HourlyStats.Values));
+
+        const ctx2 = document.getElementById('hourlyChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: hourlyLabels,
+                datasets: [{
+                    label: 'Кількість заявок',
+                    data: hourlyData,
+                    backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Графік по днях тижня
+        const weekdayLabels = @Html.Raw(Json.Serialize(Model.WeekdayStats.Keys));
+        const weekdayData = @Html.Raw(Json.Serialize(Model.WeekdayStats.Values));
+
+        const ctx3 = document.getElementById('weekdayChart').getContext('2d');
+        new Chart(ctx3, {
+            type: 'radar',
+            data: {
+                labels: weekdayLabels,
+                datasets: [{
+                    label: 'Заявки',
+                    data: weekdayData,
+                    backgroundColor: 'rgba(6, 182, 212, 0.2)',
+                    borderColor: 'rgba(6, 182, 212, 1)',
+                    pointBackgroundColor: 'rgba(6, 182, 212, 1)',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,326 @@
+﻿@model WebApplication3.Controllers.BlacklistStatisticsViewModel
+
+@{
+    ViewData["Title"] = "Статистика чорного списку";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-ban text-danger me-2"></i>
+            Статистика чорного списку
+        </h1>
+        <div>
+            <a asp-controller="Blacklist" asp-action="Index" class="btn btn-outline-danger">
+                <i class="fas fa-list me-2"></i>
+                Перейти до чорного списку
+            </a>
+            <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Назад
+            </a>
+        </div>
+    </div>
+
+    <!-- Загальна статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-danger text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-users-slash fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Всього записів</h6>
+                    <h2 class="fw-bold">@Model.TotalEntries</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Активних записів</h6>
+                    <h2 class="fw-bold">@Model.ActiveEntries</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-check fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Знято з блокування</h6>
+                    <h2 class="fw-bold">@Model.RemovedEntries</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Загальний борг</h6>
+                    <h4 class="fw-bold">@Model.TotalDebt.ToString("N0") ₴</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Розподіл по причинах блокування -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie text-danger me-2"></i>
+                        Розподіл по причинах блокування
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="reasonChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list text-warning me-2"></i>
+                        Детальна статистика
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ReasonDistribution.Any())
+                    {
+                        @foreach (var reason in Model.ReasonDistribution.OrderByDescending(x => x.Value))
+                        {
+                            var percentage = Model.TotalEntries > 0 ? (reason.Value * 100.0 / Model.TotalEntries) : 0;
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                                        <strong>@GetReasonName(reason.Key)</strong>
+                                    </div>
+                                    <span class="text-muted">@reason.Value (@percentage.ToString("F1")%)</span>
+                                </div>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar bg-danger" style="width: @percentage%">
+                                        @reason.Value записів
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p>Немає даних</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Останні додані записи -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-history text-info me-2"></i>
+                Останні додані до чорного списку
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (Model.RecentEntries.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ПІБ</th>
+                                <th>ІПН</th>
+                                <th>Контакти</th>
+                                <th>Причина</th>
+                                <th class="text-end">Сума боргу</th>
+                                <th>Статус</th>
+                                <th>Дата додавання</th>
+                                <th>Додав</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entry in Model.RecentEntries)
+                            {
+                                <tr class="@(entry.IsActive ? "" : "table-secondary")">
+                                    <td>
+                                        <strong>@entry.FullName</strong>
+                                        @if (entry.DateOfBirth.HasValue)
+                                        {
+                                            <br>
+                                            <small class="text-muted">@entry.DateOfBirth.Value.ToString("dd.MM.yyyy")</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <code>@entry.TaxNumber</code>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(entry.Phone))
+                                        {
+                                            <div>
+                                                <i class="fas fa-phone me-1 text-muted"></i>
+                                                <small>@entry.Phone</small>
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(entry.Email))
+                                        {
+                                            <div>
+                                                <i class="fas fa-envelope me-1 text-muted"></i>
+                                                <small>@entry.Email</small>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger">
+                                            @GetReasonName(entry.Reason.ToString())
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        @if (entry.DebtAmount.HasValue)
+                                        {
+                                            <strong class="text-danger">@entry.DebtAmount.Value.ToString("N0") ₴</strong>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (entry.IsActive)
+                                        {
+                                            <span class="badge bg-danger">Активний</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Знято</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small>@entry.AddedDate.ToString("dd.MM.yyyy")</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@entry.AddedBy</small>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-inbox fa-4x mb-3"></i>
+                    <h5>Чорний список порожній</h5>
+                    <p>Нових записів немає</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Статистика та висновки -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-danger border-0 shadow-sm">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-3">Ключові показники:</h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>Частка активних:</strong><br>
+                                @((Model.TotalEntries > 0 ? (Model.ActiveEntries * 100.0 / Model.TotalEntries) : 0).ToString("F1"))%
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Знято за період:</strong><br>
+                                @Model.RemovedEntries записів
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Загальний борг:</strong><br>
+                                @Model.TotalDebt.ToString("N0") ₴
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Основна причина:</strong><br>
+                                @(Model.ReasonDistribution.Any() ? GetReasonName(Model.ReasonDistribution.OrderByDescending(x => x.Value).First().Key) : "—")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetReasonName(string reason)
+    {
+        return reason switch
+        {
+            "NonPayment" => "Несплата боргу",
+            "Fraud" => "Шахрайство",
+            "DocumentFalsification" => "Фальсифікація документів",
+            "ContractViolation" => "Порушення договору",
+            "CreditFraud" => "Кредитне шахрайство",
+            "Other" => "Інше",
+            _ => reason
+        };
+    }
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        @if (Model.ReasonDistribution.Any())
+        {
+            <text>
+            const reasonLabels = @Html.Raw(Json.Serialize(Model.ReasonDistribution.Select(x => GetReasonName(x.Key))));
+            const reasonData = @Html.Raw(Json.Serialize(Model.ReasonDistribution.Select(x => x.Value)));
+
+            const ctx = document.getElementById('reasonChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: reasonLabels,
+                    datasets: [{
+                        data: reasonData,
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(139, 92, 246, 0.8)',
+                            'rgba(6, 182, 212, 0.8)',
+                            'rgba(236, 72, 153, 0.8)',
+                            'rgba(100, 116, 139, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = reasonData.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+    </script>
+}

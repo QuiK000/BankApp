@@ -1,0 +1,315 @@
+﻿@model WebApplication3.Controllers.ClientAnalysisViewModel
+
+@{
+    ViewData["Title"] = "Аналіз клієнтів";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-users text-info me-2"></i>
+            Аналіз клієнтської бази
+        </h1>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Назад
+        </a>
+    </div>
+
+    <!-- Загальна статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Всього клієнтів</h6>
+                    <h2 class="fw-bold">@Model.TotalClients</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-check fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Активних клієнтів</h6>
+                    <h2 class="fw-bold">@Model.ActiveClients</h2>
+                    <small>@((Model.TotalClients > 0 ? (Model.ActiveClients * 100.0 / Model.TotalClients) : 0).ToString("F1"))%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-plus fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Нових за місяць</h6>
+                    <h2 class="fw-bold">@Model.NewClientsThisMonth</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-repeat fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Повторних клієнтів</h6>
+                    <h2 class="fw-bold">@Model.RepeatClients</h2>
+                    <small>@((Model.TotalClients > 0 ? (Model.RepeatClients * 100.0 / Model.TotalClients) : 0).ToString("F1"))%</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Розподіл по віку -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-birthday-cake text-primary me-2"></i>
+                        Розподіл клієнтів по віку
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="ageChart" height="300"></canvas>
+                    
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-3">Детальний розподіл:</h6>
+                        @foreach (var age in Model.ClientsByAge.OrderBy(x => x.Key))
+                        {
+                            var percentage = Model.TotalClients > 0 ? (age.Value * 100.0 / Model.TotalClients) : 0;
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="fw-bold">@age.Key років</span>
+                                    <span class="text-muted">@age.Value (@percentage.ToString("F1")%)</span>
+                                </div>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar bg-primary" style="width: @percentage%">
+                                        @age.Value
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Розподіл по регіонах -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                        Географічний розподіл
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="regionChart" height="300"></canvas>
+                    
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-3">Топ-10 регіонів:</h6>
+                        <div class="list-group list-group-flush">
+                            @foreach (var region in Model.ClientsByRegion.OrderByDescending(x => x.Value).Take(10))
+                            {
+                                var percentage = Model.TotalClients > 0 ? (region.Value * 100.0 / Model.TotalClients) : 0;
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-map-pin text-danger me-2"></i>
+                                            <strong>@region.Key</strong>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-danger me-2">@region.Value</span>
+                                            <small class="text-muted">@percentage.ToString("F1")%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кількість кредитів -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card text-success me-2"></i>
+                        Розподіл по кількості кредитів
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-6 mb-4">
+                            <canvas id="creditCountChart" height="200"></canvas>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Кількість кредитів</th>
+                                            <th class="text-center">Клієнтів</th>
+                                            <th class="text-end">Відсоток</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var credit in Model.ClientsByCreditCount.OrderBy(x => x.Key))
+                                        {
+                                            var percentage = Model.TotalClients > 0 ? (credit.Value * 100.0 / Model.TotalClients) : 0;
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-primary">@credit.Key</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <strong>@credit.Value</strong>
+                                                </td>
+                                                <td class="text-end">
+                                                    <span class="text-muted">@percentage.ToString("F1")%</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insights -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-primary border-0 shadow-sm">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-lightbulb fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-3">Ключові висновки:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="mb-0">
+                                    <li>Рівень активності клієнтів: <strong>@((Model.TotalClients > 0 ? (Model.ActiveClients * 100.0 / Model.TotalClients) : 0).ToString("F1"))%</strong></li>
+                                    <li>Частка повторних клієнтів: <strong>@((Model.TotalClients > 0 ? (Model.RepeatClients * 100.0 / Model.TotalClients) : 0).ToString("F1"))%</strong></li>
+                                    <li>Нових клієнтів цього місяця: <strong>@Model.NewClientsThisMonth</strong></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="mb-0">
+                                    <li>Найбільша вікова група: <strong>@Model.ClientsByAge.OrderByDescending(x => x.Value).FirstOrDefault().Key</strong></li>
+                                    <li>Провідний регіон: <strong>@Model.ClientsByRegion.OrderByDescending(x => x.Value).FirstOrDefault().Key</strong></li>
+                                    <li>Середня кількість кредитів: <strong>@(Model.ClientsByCreditCount.Any() ? Model.ClientsByCreditCount.Average(x => x.Key).ToString("F1") : "0")</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Графік по віку
+        const ageLabels = @Html.Raw(Json.Serialize(Model.ClientsByAge.Select(x => x.Key)));
+        const ageData = @Html.Raw(Json.Serialize(Model.ClientsByAge.Select(x => x.Value)));
+
+        const ctx1 = document.getElementById('ageChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ageLabels,
+                datasets: [{
+                    label: 'Кількість клієнтів',
+                    data: ageData,
+                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Графік по регіонах
+        const regionLabels = @Html.Raw(Json.Serialize(Model.ClientsByRegion.OrderByDescending(x => x.Value).Take(5).Select(x => x.Key)));
+        const regionData = @Html.Raw(Json.Serialize(Model.ClientsByRegion.OrderByDescending(x => x.Value).Take(5).Select(x => x.Value)));
+
+        const ctx2 = document.getElementById('regionChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: regionLabels,
+                datasets: [{
+                    data: regionData,
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(37, 99, 235, 0.8)',
+                        'rgba(139, 92, 246, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Графік по кількості кредитів
+        const creditCountLabels = @Html.Raw(Json.Serialize(Model.ClientsByCreditCount.Select(x => x.Key + " кредитів")));
+        const creditCountData = @Html.Raw(Json.Serialize(Model.ClientsByCreditCount.Select(x => x.Value)));
+
+        const ctx3 = document.getElementById('creditCountChart').getContext('2d');
+        new Chart(ctx3, {
+            type: 'pie',
+            data: {
+                labels: creditCountLabels,
+                datasets: [{
+                    data: creditCountData,
+                    backgroundColor: [
+                        'rgba(37, 99, 235, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(139, 92, 246, 0.8)',
+                        'rgba(236, 72, 153, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+}

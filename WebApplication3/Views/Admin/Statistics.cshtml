@@ -1,0 +1,407 @@
+﻿@{
+    ViewData["Title"] = "Статистика та аналітика";
+    var statusStats = ViewBag.StatusStats as Dictionary<ApplicationStatus, int>;
+    var creditStats = ViewBag.CreditStats as Dictionary<string, decimal>;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-chart-pie text-primary me-2"></i>
+            Статистика та аналітика
+        </h1>
+        <div>
+            <a asp-action="Reports" class="btn btn-outline-primary">
+                <i class="fas fa-file-pdf me-2"></i>
+                Звіти
+            </a>
+            <a asp-action="Dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Назад
+            </a>
+        </div>
+    </div>
+
+    <!-- Швидкі посилання -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <a asp-controller="Analytics" asp-action="Dashboard" class="text-decoration-none">
+                <div class="card border-0 shadow-sm bg-gradient-primary text-white h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-3x mb-3 opacity-75"></i>
+                        <h5 class="fw-bold">Розширена аналітика</h5>
+                        <p class="mb-0 small">Детальний аналіз в реальному часі</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a asp-controller="Analytics" asp-action="CreditPerformance" class="text-decoration-none">
+                <div class="card border-0 shadow-sm bg-success text-white h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-trophy fa-3x mb-3 opacity-75"></i>
+                        <h5 class="fw-bold">Ефективність кредитів</h5>
+                        <p class="mb-0 small">Аналіз продуктивності продуктів</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a asp-controller="Analytics" asp-action="ClientAnalysis" class="text-decoration-none">
+                <div class="card border-0 shadow-sm bg-info text-white h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-3x mb-3 opacity-75"></i>
+                        <h5 class="fw-bold">Аналіз клієнтів</h5>
+                        <p class="mb-0 small">Сегментація клієнтської бази</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a asp-controller="Analytics" asp-action="TimeAnalysis" class="text-decoration-none">
+                <div class="card border-0 shadow-sm bg-warning text-white h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-3x mb-3 opacity-75"></i>
+                        <h5 class="fw-bold">Часовий аналіз</h5>
+                        <p class="mb-0 small">Тренди та пікові години</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Графіки -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie text-primary me-2"></i>
+                        Розподіл заявок по статусах
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="300"></canvas>
+                    
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-3">Статистика:</h6>
+                        @if (statusStats != null)
+                        {
+                            <div class="row g-2">
+                                @foreach (var status in statusStats)
+                                {
+                                    <div class="col-6">
+                                        <div class="p-2 bg-light rounded">
+                                            <span class="badge @GetStatusClass(status.Key) me-2">@GetStatusName(status.Key)</span>
+                                            <strong>@status.Value</strong>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar text-success me-2"></i>
+                        Сума заявок по типах кредитів
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="creditChart" height="300"></canvas>
+                    
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-3">Топ кредитів:</h6>
+                        @if (creditStats != null)
+                        {
+                            @foreach (var credit in creditStats.OrderByDescending(x => x.Value).Take(5))
+                            {
+                                var percentage = creditStats.Values.Sum() > 0 ? (credit.Value / creditStats.Values.Sum() * 100) : 0;
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <strong>@credit.Key</strong>
+                                        <span class="text-muted">@credit.Value.ToString("N0") ₴</span>
+                                    </div>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" style="width: @percentage%">
+                                            @percentage.ToString("F1")%
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Динаміка за останні 6 місяців -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-chart-area text-info me-2"></i>
+                Динаміка заявок та сум за останні 6 місяців
+            </h5>
+        </div>
+        <div class="card-body">
+            <canvas id="trendsChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Додаткові метрики -->
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-percent text-success me-2"></i>
+                        Конверсія
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-4 fw-bold text-success mb-2">—</div>
+                    <p class="text-muted mb-0">Відсоток схвалених заявок</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        Середній час обробки
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-4 fw-bold text-warning mb-2">—</div>
+                    <p class="text-muted mb-0">Годин від подачі до рішення</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-money-bill-wave text-primary me-2"></i>
+                        Середня сума заявки
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-primary mb-2">—</div>
+                    <p class="text-muted mb-0">В середньому на заявку</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Корисні посилання -->
+    <div class="alert alert-primary border-0 shadow-sm">
+        <div class="d-flex">
+            <div class="me-3">
+                <i class="fas fa-lightbulb fa-2x"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-3">Доступні звіти та аналітика:</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="mb-0">
+                            <li>
+                                <a asp-controller="Analytics" asp-action="Scoring" class="text-decoration-none">
+                                    Кредитний скоринг та рейтинги
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-controller="Analytics" asp-action="BlacklistStats" class="text-decoration-none">
+                                    Статистика чорного списку
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="mb-0">
+                            <li>
+                                <a asp-action="Reports" class="text-decoration-none">
+                                    Генерація PDF звітів
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-controller="Analytics" asp-action="ExportData" class="text-decoration-none">
+                                    Експорт даних в CSV
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusClass(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "bg-info",
+            ApplicationStatus.UnderReview => "bg-warning",
+            ApplicationStatus.Approved => "bg-success",
+            ApplicationStatus.Rejected => "bg-danger",
+            ApplicationStatus.Issued => "bg-primary",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusName(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "Нові",
+            ApplicationStatus.UnderReview => "На розгляді",
+            ApplicationStatus.DocumentsRequired => "Потрібні документи",
+            ApplicationStatus.DocumentsVerification => "Перевірка",
+            ApplicationStatus.Approved => "Схвалено",
+            ApplicationStatus.Rejected => "Відхилено",
+            ApplicationStatus.Issued => "Видано",
+            ApplicationStatus.Cancelled => "Скасовано",
+            _ => status.ToString()
+        };
+    }
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Графік по статусах
+        fetch('/Admin/GetStatusChart')
+            .then(response => response.json())
+            .then(data => {
+                const ctx1 = document.getElementById('statusChart').getContext('2d');
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.map(d => d.status),
+                        datasets: [{
+                            data: data.map(d => d.count),
+                            backgroundColor: [
+                                'rgba(6, 182, 212, 0.8)',
+                                'rgba(245, 158, 11, 0.8)',
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(239, 68, 68, 0.8)',
+                                'rgba(37, 99, 235, 0.8)',
+                                'rgba(107, 114, 128, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            });
+
+        // Графік по кредитах
+        fetch('/Admin/GetCreditTypesChart')
+            .then(response => response.json())
+            .then(data => {
+                const ctx2 = document.getElementById('creditChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.creditType),
+                        datasets: [{
+                            label: 'Сума (₴)',
+                            data: data.map(d => d.amount),
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+
+        // Графік трендів
+        fetch('/Admin/GetApplicationsChart')
+            .then(response => response.json())
+            .then(data => {
+                const ctx3 = document.getElementById('trendsChart').getContext('2d');
+                new Chart(ctx3, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => d.month),
+                        datasets: [{
+                            label: 'Кількість заявок',
+                            data: data.map(d => d.count),
+                            borderColor: 'rgba(37, 99, 235, 1)',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            yAxisID: 'y'
+                        }, {
+                            label: 'Сума (₴)',
+                            data: data.map(d => d.amount),
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                beginAtZero: true
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                beginAtZero: true,
+                                grid: {
+                                    drawOnChartArea: false
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    </script>
+}

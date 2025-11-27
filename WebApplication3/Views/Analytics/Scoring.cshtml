@@ -1,0 +1,314 @@
+﻿@model WebApplication3.Controllers.ScoringStatisticsViewModel
+
+@{
+    ViewData["Title"] = "Кредитний скоринг";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-chart-line text-primary me-2"></i>
+            Кредитний скоринг
+        </h1>
+        <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Назад
+        </a>
+    </div>
+
+    <!-- Загальна статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Розраховано скорингів</h6>
+                    <h2 class="fw-bold">@Model.TotalScores</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Середній бал</h6>
+                    <h2 class="fw-bold">@Model.AverageScore</h2>
+                    <small class="text-white-50">з 1000</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Сер. ймовірність дефолту</h6>
+                    <h2 class="fw-bold">@Model.AverageDefaultProbability.ToString("F1")%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-pie fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50">Категорій</h6>
+                    <h2 class="fw-bold">@Model.RatingDistribution.Count</h2>
+                    <small class="text-white-50">рейтингів</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Розподіл по рейтингах -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie text-primary me-2"></i>
+                        Розподіл клієнтів по рейтингах
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="ratingChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list text-success me-2"></i>
+                        Детальний розподіл
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var rating in Model.RatingDistribution.OrderBy(x => x.Key))
+                    {
+                        var percentage = Model.TotalScores > 0 ? (rating.Value * 100.0 / Model.TotalScores) : 0;
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <span class="badge @GetRatingBadgeClass(rating.Key) fs-6 me-2">@rating.Key</span>
+                                    <strong>@GetRatingDescription(rating.Key)</strong>
+                                </div>
+                                <span class="text-muted">@rating.Value (@percentage.ToString("F1")%)</span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar @GetRatingProgressClass(rating.Key)" 
+                                     style="width: @percentage%">
+                                    @rating.Value клієнтів
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Останні розрахунки -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-history text-info me-2"></i>
+                Останні розрахунки скорингу
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (Model.RecentScores.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Клієнт</th>
+                                <th class="text-center">Загальний бал</th>
+                                <th class="text-center">Рейтинг</th>
+                                <th class="text-center">Ймовірність дефолту</th>
+                                <th class="text-end">Рекомендована сума</th>
+                                <th>Дата розрахунку</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var score in Model.RecentScores)
+                            {
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <i class="fas fa-user-circle text-primary me-2"></i>
+                                            <strong>@score.User.FullName</strong>
+                                        </div>
+                                        <small class="text-muted">@score.User.Email</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <strong class="fs-5 text-primary">@score.TotalScore</strong>
+                                            <small class="text-muted">з 1000</small>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @GetRatingBadgeClass(score.Rating) fs-6">
+                                            @score.Rating
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @GetDefaultProbabilityClass(score.DefaultProbability)">
+                                            @score.DefaultProbability.ToString("F1")%
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong class="text-success">@score.RecommendedMaxAmount.ToString("N0") ₴</strong>
+                                    </td>
+                                    <td>
+                                        <small>@score.CalculationDate.ToString("dd.MM.yyyy HH:mm")</small>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-inbox fa-4x mb-3"></i>
+                    <h5>Немає даних про скоринг</h5>
+                    <p>Скоринг буде розрахований після першої заявки клієнта</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Пояснення рейтингів -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info border-0 shadow-sm">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-info-circle fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-3">Опис кредитних рейтингів:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="mb-0">
+                                    <li><strong class="text-success">A+</strong> (850-1000): Відмінний кредитний рейтинг, мінімальний ризик</li>
+                                    <li><strong class="text-success">A</strong> (750-849): Дуже хороший рейтинг, низький ризик</li>
+                                    <li><strong class="text-primary">B+</strong> (650-749): Хороший рейтинг, помірний ризик</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="mb-0">
+                                    <li><strong class="text-warning">B</strong> (550-649): Задовільний рейтинг, підвищений ризик</li>
+                                    <li><strong class="text-warning">C</strong> (450-549): Посередній рейтинг, високий ризик</li>
+                                    <li><strong class="text-danger">D-E</strong> (< 450): Низький рейтинг, дуже високий ризик</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetRatingBadgeClass(string rating)
+    {
+        return rating switch
+        {
+            "A+" => "bg-success",
+            "A" => "bg-success",
+            "B+" => "bg-primary",
+            "B" => "bg-warning",
+            "C" => "bg-warning",
+            "D" => "bg-danger",
+            "E" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetRatingProgressClass(string rating)
+    {
+        return rating switch
+        {
+            "A+" => "bg-success",
+            "A" => "bg-success",
+            "B+" => "bg-primary",
+            "B" => "bg-warning",
+            "C" => "bg-warning",
+            "D" => "bg-danger",
+            "E" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetRatingDescription(string rating)
+    {
+        return rating switch
+        {
+            "A+" => "Відмінний рейтинг",
+            "A" => "Дуже хороший",
+            "B+" => "Хороший рейтинг",
+            "B" => "Задовільний",
+            "C" => "Посередній",
+            "D" => "Низький",
+            "E" => "Дуже низький",
+            _ => "Невідомо"
+        };
+    }
+
+    string GetDefaultProbabilityClass(decimal probability)
+    {
+        if (probability < 10) return "bg-success";
+        if (probability < 25) return "bg-warning";
+        return "bg-danger";
+    }
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ratingLabels = @Html.Raw(Json.Serialize(Model.RatingDistribution.Select(x => x.Key)));
+        const ratingData = @Html.Raw(Json.Serialize(Model.RatingDistribution.Select(x => x.Value)));
+
+        const ctx = document.getElementById('ratingChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ratingLabels,
+                datasets: [{
+                    data: ratingData,
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.8)',  // A+
+                        'rgba(16, 185, 129, 0.6)',  // A
+                        'rgba(37, 99, 235, 0.8)',   // B+
+                        'rgba(245, 158, 11, 0.8)',  // B
+                        'rgba(245, 158, 11, 0.6)',  // C
+                        'rgba(239, 68, 68, 0.8)',   // D
+                        'rgba(239, 68, 68, 0.6)'    // E
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = ratingData.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}
