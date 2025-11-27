@@ -1,0 +1,322 @@
+﻿@model WebApplication3.Controllers.AnalyticsDashboardViewModel
+
+@{
+    ViewData["Title"] = "Аналітика та звіти";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-chart-line text-primary me-2"></i>
+            Розширена аналітика
+        </h1>
+        <div>
+            <a asp-action="CreditPerformance" class="btn btn-outline-primary">
+                <i class="fas fa-trophy me-2"></i>
+                Ефективність кредитів
+            </a>
+            <a asp-action="ClientAnalysis" class="btn btn-outline-info">
+                <i class="fas fa-users me-2"></i>
+                Аналіз клієнтів
+            </a>
+            <a asp-action="TimeAnalysis" class="btn btn-outline-success">
+                <i class="fas fa-clock me-2"></i>
+                Часовий аналіз
+            </a>
+        </div>
+    </div>
+
+    <!-- Real-time статистика -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-primary border-0 d-flex align-items-center">
+                <i class="fas fa-sync-alt fa-spin fa-2x me-3"></i>
+                <div>
+                    <strong>Статистика в реальному часі</strong>
+                    <p class="mb-0 small">Останнє оновлення: @DateTime.Now.ToString("HH:mm:ss")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Сьогодні -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="fw-bold mb-3">
+                <i class="fas fa-calendar-day text-info me-2"></i>
+                Сьогодні
+            </h4>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Заявок</h6>
+                            <h2 class="fw-bold mb-0">@Model.TodayApplications</h2>
+                        </div>
+                        <i class="fas fa-file-alt fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Сума</h6>
+                            <h4 class="fw-bold mb-0">@Model.TodayAmount.ToString("N0") ₴</h4>
+                        </div>
+                        <i class="fas fa-money-bill-wave fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Схвалено</h6>
+                            <h2 class="fw-bold mb-0">@Model.TodayApproved</h2>
+                        </div>
+                        <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Порівняння періодів -->
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-calendar-week text-warning me-2"></i>
+                        За тиждень
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Заявок:</span>
+                            <strong class="text-primary">@Model.WeekApplications</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Сума:</span>
+                            <strong class="text-success">@Model.WeekAmount.ToString("N0") ₴</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Схвалено:</span>
+                            <strong class="text-info">@Model.WeekApproved</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-calendar-alt text-success me-2"></i>
+                        За місяць
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Заявок:</span>
+                            <strong class="text-primary">@Model.MonthApplications</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Сума:</span>
+                            <strong class="text-success">@Model.MonthAmount.ToString("N0") ₴</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Схвалено:</span>
+                            <strong class="text-info">@Model.MonthApproved</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-pie text-danger me-2"></i>
+                        KPI показники
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Конверсія:</span>
+                            <strong class="text-success">@Model.ConversionRate%</strong>
+                        </div>
+                        <div class="progress mb-3" style="height: 10px;">
+                            <div class="progress-bar bg-success" style="width: @Model.ConversionRate%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Середній час обробки:</span>
+                            <strong class="text-info">@Model.AverageProcessingTime год</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графіки -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock text-primary me-2"></i>
+                        Години пік (активність протягом дня)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="peakHoursChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star text-warning me-2"></i>
+                        Топ менеджери
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.TopManagers.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var manager in Model.TopManagers.Take(5))
+                            {
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>@manager.ManagerName</strong>
+                                            <div class="small text-muted">
+                                                Оброблено: @manager.ProcessedApplications
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="badge bg-success">
+                                                @manager.ApprovalRate%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">Немає даних</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Швидкі дії -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-download me-2"></i>
+                        Експорт даних
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="ExportData" method="post" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Тип звіту</label>
+                            <select name="reportType" class="form-select">
+                                <option value="full">Повний звіт</option>
+                                <option value="summary">Короткий звіт</option>
+                                <option value="clients">Клієнти</option>
+                                <option value="credits">Кредити</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Дата від</label>
+                            <input type="date" name="startDate" class="form-control" 
+                                   value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Дата до</label>
+                            <input type="date" name="endDate" class="form-control" 
+                                   value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-file-excel me-2"></i>
+                                Експортувати CSV
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Графік годин пік
+        const peakHoursData = @Html.Raw(Json.Serialize(Model.PeakHours));
+        const hours = Object.keys(peakHoursData).map(h => h + ':00');
+        const counts = Object.values(peakHoursData);
+
+        const ctx = document.getElementById('peakHoursChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: hours,
+                datasets: [{
+                    label: 'Кількість заявок',
+                    data: counts,
+                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Автооновлення кожні 30 секунд
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+    </script>
+}
