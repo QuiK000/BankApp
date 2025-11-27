@@ -1,0 +1,313 @@
+﻿@{
+    ViewData["Title"] = "Кредитний калькулятор";
+    var credits = ViewBag.Credits as List<Credit>;
+}
+
+<div class="container">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary">
+            <i class="fas fa-calculator me-2"></i>
+            Кредитний калькулятор
+        </h1>
+        <p class="lead text-muted">Розрахуйте параметри кредиту та графік платежів</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sliders-h me-2"></i>
+                        Параметри кредиту
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Тип кредиту</label>
+                        <select id="creditType" class="form-select">
+                            <option value="">Оберіть кредит</option>
+                            @foreach (var credit in credits)
+                            {
+                                <option value="@credit.Id" 
+                                        data-rate="@credit.InterestRate"
+                                        data-min-amount="@credit.MinAmount"
+                                        data-max-amount="@credit.MaxAmount"
+                                        data-min-term="@credit.MinTermMonths"
+                                        data-max-term="@credit.MaxTermMonths">
+                                    @credit.Name (@credit.InterestRate%)
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            Сума кредиту: <span id="amountValue" class="text-primary">50000</span> грн
+                        </label>
+                        <input type="range" class="form-range" id="amount" 
+                               min="5000" max="500000" step="1000" value="50000">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted" id="minAmount">5 тис.</small>
+                            <small class="text-muted" id="maxAmount">500 тис.</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            Термін: <span id="termValue" class="text-primary">12</span> місяців
+                        </label>
+                        <input type="range" class="form-range" id="term" 
+                               min="6" max="60" step="1" value="12">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted" id="minTerm">6 міс.</small>
+                            <small class="text-muted" id="maxTerm">60 міс.</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Процентна ставка</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="interestRate" 
+                                   value="18" step="0.1" min="0" max="50">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary w-100 mb-2" onclick="calculate()">
+                        <i class="fas fa-calculator me-2"></i>
+                        Розрахувати
+                    </button>
+
+                    <button class="btn btn-outline-secondary w-100" onclick="reset()">
+                        <i class="fas fa-redo me-2"></i>
+                        Скинути
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <!-- Результати розрахунку -->
+            <div class="card shadow-sm border-0 mb-4" id="resultsCard" style="display: none;">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
+                        Результати розрахунку
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Щомісячний платіж</small>
+                                <div class="fs-4 fw-bold text-success" id="monthlyPayment">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Загальна сума виплат</small>
+                                <div class="fs-4 fw-bold text-primary" id="totalAmount">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Переплата</small>
+                                <div class="fs-4 fw-bold text-danger" id="overpayment">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Графік -->
+                    <div class="mb-4">
+                        <canvas id="paymentChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Графік платежів -->
+            <div class="card shadow-sm border-0" id="scheduleCard" style="display: none;">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                        Графік платежів
+                    </h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="downloadSchedule()">
+                        <i class="fas fa-download me-1"></i>
+                        Завантажити PDF
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="scheduleTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>№</th>
+                                    <th>Дата платежу</th>
+                                    <th>Платіж</th>
+                                    <th>Основний борг</th>
+                                    <th>Проценти</th>
+                                    <th>Залишок</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scheduleBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let chart = null;
+        
+        // Оновлення діапазонів при виборі кредиту
+        document.getElementById('creditType').addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            if (selected.value) {
+                const minAmount = parseInt(selected.dataset.minAmount);
+                const maxAmount = parseInt(selected.dataset.maxAmount);
+                const minTerm = parseInt(selected.dataset.minTerm);
+                const maxTerm = parseInt(selected.dataset.maxTerm);
+                const rate = parseFloat(selected.dataset.rate);
+                
+                document.getElementById('amount').min = minAmount;
+                document.getElementById('amount').max = maxAmount;
+                document.getElementById('amount').value = minAmount;
+                document.getElementById('amountValue').textContent = minAmount.toLocaleString('uk-UA');
+                document.getElementById('minAmount').textContent = (minAmount / 1000) + ' тис.';
+                document.getElementById('maxAmount').textContent = (maxAmount / 1000) + ' тис.';
+                
+                document.getElementById('term').min = minTerm;
+                document.getElementById('term').max = maxTerm;
+                document.getElementById('term').value = minTerm;
+                document.getElementById('termValue').textContent = minTerm;
+                document.getElementById('minTerm').textContent = minTerm + ' міс.';
+                document.getElementById('maxTerm').textContent = maxTerm + ' міс.';
+                
+                document.getElementById('interestRate').value = rate;
+            }
+        });
+        
+        // Оновлення значень при зміні слайдерів
+        document.getElementById('amount').addEventListener('input', function() {
+            document.getElementById('amountValue').textContent = 
+                parseInt(this.value).toLocaleString('uk-UA');
+        });
+        
+        document.getElementById('term').addEventListener('input', function() {
+            document.getElementById('termValue').textContent = this.value;
+        });
+        
+        function calculate() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const term = parseInt(document.getElementById('term').value);
+            const rate = parseFloat(document.getElementById('interestRate').value);
+            
+            const monthlyRate = rate / 100 / 12;
+            let monthlyPayment;
+            
+            if (monthlyRate === 0) {
+                monthlyPayment = amount / term;
+            } else {
+                monthlyPayment = amount * monthlyRate * Math.pow(1 + monthlyRate, term) / 
+                    (Math.pow(1 + monthlyRate, term) - 1);
+            }
+            
+            const totalAmount = monthlyPayment * term;
+            const overpayment = totalAmount - amount;
+            
+            document.getElementById('monthlyPayment').textContent = 
+                monthlyPayment.toLocaleString('uk-UA', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' грн';
+            document.getElementById('totalAmount').textContent = 
+                totalAmount.toLocaleString('uk-UA', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' грн';
+            document.getElementById('overpayment').textContent = 
+                overpayment.toLocaleString('uk-UA', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' грн';
+            
+            document.getElementById('resultsCard').style.display = 'block';
+            document.getElementById('scheduleCard').style.display = 'block';
+            
+            generateSchedule(amount, term, monthlyRate, monthlyPayment);
+            drawChart(amount, overpayment);
+        }
+        
+        function generateSchedule(amount, term, monthlyRate, monthlyPayment) {
+            const tbody = document.getElementById('scheduleBody');
+            tbody.innerHTML = '';
+            
+            let remainingDebt = amount;
+            let paymentDate = new Date();
+            paymentDate.setMonth(paymentDate.getMonth() + 1);
+            
+            for (let i = 1; i <= term; i++) {
+                const interest = remainingDebt * monthlyRate;
+                const principal = monthlyPayment - interest;
+                remainingDebt -= principal;
+                
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = i;
+                row.insertCell(1).textContent = paymentDate.toLocaleDateString('uk-UA');
+                row.insertCell(2).textContent = monthlyPayment.toLocaleString('uk-UA', {minimumFractionDigits: 2});
+                row.insertCell(3).textContent = principal.toLocaleString('uk-UA', {minimumFractionDigits: 2});
+                row.insertCell(4).textContent = interest.toLocaleString('uk-UA', {minimumFractionDigits: 2});
+                row.insertCell(5).textContent = Math.max(0, remainingDebt).toLocaleString('uk-UA', {minimumFractionDigits: 2});
+                
+                paymentDate.setMonth(paymentDate.getMonth() + 1);
+            }
+        }
+        
+        function drawChart(principal, interest) {
+            const ctx = document.getElementById('paymentChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Основний борг', 'Переплата'],
+                    datasets: [{
+                        data: [principal, interest],
+                        backgroundColor: ['#2563eb', '#ef4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Структура виплат'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function reset() {
+            document.getElementById('creditType').value = '';
+            document.getElementById('amount').value = 50000;
+            document.getElementById('term').value = 12;
+            document.getElementById('interestRate').value = 18;
+            document.getElementById('amountValue').textContent = '50000';
+            document.getElementById('termValue').textContent = '12';
+            document.getElementById('resultsCard').style.display = 'none';
+            document.getElementById('scheduleCard').style.display = 'none';
+            
+            if (chart) {
+                chart.destroy();
+                chart = null;
+            }
+        }
+        
+        function downloadSchedule() {
+            alert('Функція завантаження PDF буде доступна після авторизації');
+        }
+    </script>
+}
