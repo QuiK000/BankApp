@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="utf-8"/>
@@ -20,25 +24,126 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" asp-area="" asp-controller="Credits" asp-action="Index">
                             <i class="fas fa-home me-1"></i>
-                            Головна
+                            Кредити
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Customers" asp-action="Index">
-                            <i class="fas fa-users me-1"></i>
-                            Клієнти
+                        <a class="nav-link" asp-area="" asp-controller="Credits" asp-action="Calculator">
+                            <i class="fas fa-calculator me-1"></i>
+                            Калькулятор
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Credits" asp-action="MyApplications">
-                            <i class="fas fa-list me-1"></i>
-                            Мої заявки
-                        </a>
-                    </li>
+                    
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Credits" asp-action="MyApplications">
+                                <i class="fas fa-list me-1"></i>
+                                Мої заявки
+                            </a>
+                        </li>
+                        
+                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" 
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-cog me-1"></i>
+                                    Управління
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">
+                                            <i class="fas fa-tachometer-alt me-2"></i>
+                                            Панель адміністратора
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Applications">
+                                            <i class="fas fa-file-alt me-2"></i>
+                                            Всі заявки
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Customers" asp-action="Index">
+                                            <i class="fas fa-users me-2"></i>
+                                            Клієнти
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Reports">
+                                            <i class="fas fa-chart-bar me-2"></i>
+                                            Звіти та статистика
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                    }
+                </ul>
+                
+                <ul class="navbar-nav">
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        var user = await UserManager.GetUserAsync(User);
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>
+                                @user?.FullName
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                                        <i class="fas fa-user me-2"></i>
+                                        Мій профіль
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Credits" asp-action="MyApplications">
+                                        <i class="fas fa-list me-2"></i>
+                                        Мої заявки
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
+                                        <i class="fas fa-key me-2"></i>
+                                        Змінити пароль
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i>
+                                            Вийти
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Login">
+                                <i class="fas fa-sign-in-alt me-1"></i>
+                                Вхід
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-light text-primary ms-2" 
+                               asp-controller="Account" asp-action="Register">
+                                <i class="fas fa-user-plus me-1"></i>
+                                Реєстрація
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -46,6 +151,24 @@
 </header>
 
 <div class="container mt-4 mb-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
     <main role="main" class="pb-3">
         @RenderBody()
     </main>

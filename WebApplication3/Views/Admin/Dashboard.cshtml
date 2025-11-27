@@ -1,0 +1,279 @@
+﻿@model WebApplication3.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Панель адміністратора";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-tachometer-alt text-primary me-2"></i>
+            Панель адміністратора
+        </h1>
+        <div>
+            <a asp-action="Reports" class="btn btn-outline-primary">
+                <i class="fas fa-file-pdf me-2"></i>
+                Звіти
+            </a>
+            <a asp-action="Statistics" class="btn btn-outline-info">
+                <i class="fas fa-chart-bar me-2"></i>
+                Статистика
+            </a>
+        </div>
+    </div>
+
+    <!-- Статистичні картки -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-hover h-100 bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small fw-bold mb-1">Всього заявок</div>
+                            <div class="display-6 fw-bold">@Model.TotalApplications</div>
+                        </div>
+                        <div>
+                            <i class="fas fa-file-alt fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-hover h-100 bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small fw-bold mb-1">Загальна сума</div>
+                            <div class="h5 fw-bold">@Model.TotalAmount.ToString("N0") грн</div>
+                        </div>
+                        <div>
+                            <i class="fas fa-money-bill-wave fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-hover h-100 bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small fw-bold mb-1">Клієнтів</div>
+                            <div class="display-6 fw-bold">@Model.TotalClients</div>
+                        </div>
+                        <div>
+                            <i class="fas fa-users fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-hover h-100 bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small fw-bold mb-1">Середня сума</div>
+                            <div class="h5 fw-bold">@Model.AverageAmount.ToString("N0") грн</div>
+                        </div>
+                        <div>
+                            <i class="fas fa-calculator fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика за статусами -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                    <h6 class="text-muted">Нові заявки</h6>
+                    <h3 class="fw-bold text-info">@Model.NewApplications</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-2x text-warning mb-2"></i>
+                    <h6 class="text-muted">На розгляді</h6>
+                    <h3 class="fw-bold text-warning">@Model.UnderReviewApplications</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                    <h6 class="text-muted">Схвалено</h6>
+                    <h3 class="fw-bold text-success">@Model.ApprovedApplications</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                    <h6 class="text-muted">Відхилено</h6>
+                    <h3 class="fw-bold text-danger">@Model.RejectedApplications</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Популярні кредити -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-fire text-danger me-2"></i>
+                        Популярні кредити
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach (var credit in Model.PopularCredits)
+                        {
+                            <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">@credit.CreditName</h6>
+                                    <small class="text-muted">@credit.TotalAmount.ToString("N0") грн</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">@credit.Count заявок</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Останні заявки -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history text-info me-2"></i>
+                        Останні заявки
+                    </h5>
+                    <a asp-action="Applications" class="btn btn-sm btn-outline-primary">
+                        Показати всі
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>№</th>
+                                    <th>Клієнт</th>
+                                    <th>Кредит</th>
+                                    <th>Сума</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var app in Model.RecentApplications.Take(5))
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-action="ApplicationDetails" asp-route-id="@app.Id" class="text-decoration-none">
+                                                #@app.Id
+                                            </a>
+                                        </td>
+                                        <td>@app.CustomerName</td>
+                                        <td>@app.Credit?.Name</td>
+                                        <td>@app.Amount.ToString("N0")</td>
+                                        <td>
+                                            <span class="badge @GetStatusClass(app.Status)">
+                                                @app.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графіки -->
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line text-primary me-2"></i>
+                        Динаміка заявок за останні 6 місяців
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="applicationsChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusClass(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "bg-info",
+            ApplicationStatus.UnderReview => "bg-warning",
+            ApplicationStatus.Approved => "bg-success",
+            ApplicationStatus.Rejected => "bg-danger",
+            ApplicationStatus.Issued => "bg-primary",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Завантаження даних для графіка
+        fetch('/Admin/GetApplicationsChart')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('applicationsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => d.month),
+                        datasets: [{
+                            label: 'Кількість заявок',
+                            data: data.map(d => d.count),
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+    </script>
+}

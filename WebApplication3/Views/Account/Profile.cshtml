@@ -1,0 +1,158 @@
+﻿@model WebApplication3.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Мій профіль";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="avatar-large mb-3">
+                        @if (!string.IsNullOrEmpty(Model.AvatarUrl))
+                        {
+                            <img src="@Model.AvatarUrl" alt="Avatar" class="rounded-circle" 
+                                 style="width: 120px; height: 120px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <i class="fas fa-user fa-4x text-white"></i>
+                        }
+                    </div>
+                    <h4 class="fw-bold mb-2">@Model.FullName</h4>
+                    <p class="text-muted mb-3">@Model.Email</p>
+                    
+                    <div class="d-grid gap-2">
+                        <a asp-action="ChangePassword" class="btn btn-outline-primary">
+                            <i class="fas fa-key me-2"></i>
+                            Змінити пароль
+                        </a>
+                        <a asp-controller="Credits" asp-action="MyApplications" class="btn btn-outline-info">
+                            <i class="fas fa-list me-2"></i>
+                            Мої заявки
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mt-3">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Інформація про акаунт</h6>
+                    <div class="mb-2">
+                        <small class="text-muted">Дата реєстрації</small>
+                        <div>@Model.RegistrationDate.ToString("dd MMMM yyyy")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>
+                        Редагувати профіль
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Profile" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label fw-bold">
+                                <i class="fas fa-user me-1"></i> Повне ім'я
+                            </label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-1"></i> Email
+                                </label>
+                                <input asp-for="Email" class="form-control" readonly 
+                                       style="background-color: #f8f9fa;" />
+                                <small class="text-muted">Email не можна змінити</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Phone" class="form-label fw-bold">
+                                    <i class="fas fa-phone me-1"></i> Телефон
+                                </label>
+                                <input asp-for="Phone" class="form-control" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DateOfBirth" class="form-label fw-bold">
+                                    <i class="fas fa-birthday-cake me-1"></i> Дата народження
+                                </label>
+                                <input asp-for="DateOfBirth" class="form-control" type="date" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="TaxNumber" class="form-label fw-bold">
+                                    <i class="fas fa-id-card me-1"></i> ІПН
+                                </label>
+                                <input asp-for="TaxNumber" class="form-control" maxlength="10" />
+                                <span asp-validation-for="TaxNumber" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Address" class="form-label fw-bold">
+                                <i class="fas fa-map-marker-alt me-1"></i> Адреса
+                            </label>
+                            <textarea asp-for="Address" class="form-control" rows="3" 
+                                      placeholder="Введіть вашу адресу"></textarea>
+                            <span asp-validation-for="Address" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-controller="Credits" asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Скасувати
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>
+                                Зберегти зміни
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-large {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin: 0 auto;
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

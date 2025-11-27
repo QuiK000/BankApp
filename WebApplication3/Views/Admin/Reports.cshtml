@@ -1,0 +1,295 @@
+﻿@{
+    ViewData["Title"] = "Звіти та статистика";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-chart-bar text-primary me-2"></i>
+            Звіти та статистика
+        </h1>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Назад
+        </a>
+    </div>
+
+    <!-- Генерація звіту -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-pdf me-2"></i>
+                        Генерація звіту по заявках
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="GenerateReport" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-calendar me-1"></i>
+                                Період звіту
+                            </label>
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Дата від</label>
+                                    <input type="date" name="startDate" class="form-control" 
+                                           value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" required>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Дата до</label>
+                                    <input type="date" name="endDate" class="form-control" 
+                                           value="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info border-0 mb-3">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                Звіт буде містити всі заявки за обраний період з детальною інформацією та статистикою
+                            </small>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-download me-2"></i>
+                                Згенерувати та завантажити PDF
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-question-circle text-info me-2"></i>
+                        Що міститься у звіті?
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Загальна статистика по заявках
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Кількість заявок за період
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Загальна сума кредитів
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Середня сума заявки
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Детальна таблиця всіх заявок
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Інформація про клієнтів
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Статуси та дати подання
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Швидкі звіти -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt text-warning me-2"></i>
+                        Швидкі звіти
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <form asp-action="GenerateReport" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="startDate" value="@DateTime.Now.Date.ToString("yyyy-MM-dd")">
+                                <input type="hidden" name="endDate" value="@DateTime.Now.Date.ToString("yyyy-MM-dd")">
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-calendar-day me-2"></i>
+                                    За сьогодні
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <form asp-action="GenerateReport" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="startDate" value="@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")">
+                                <input type="hidden" name="endDate" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-calendar-week me-2"></i>
+                                    За тиждень
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <form asp-action="GenerateReport" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="startDate" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")">
+                                <input type="hidden" name="endDate" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    За місяць
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <form asp-action="GenerateReport" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="startDate" value="@DateTime.Now.ToString("yyyy-01-01")">
+                                <input type="hidden" name="endDate" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    За рік
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графіки -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie text-primary me-2"></i>
+                        Розподіл по статусах
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar text-success me-2"></i>
+                        Популярні типи кредитів
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="creditsChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Додаткова інформація -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-light border shadow-sm">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-lightbulb fa-2x text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-2">Корисні підказки</h6>
+                        <ul class="mb-0 ps-3">
+                            <li>Звіти генеруються в форматі PDF та автоматично завантажуються</li>
+                            <li>Для детальної аналітики використовуйте фільтри на сторінці "Всі заявки"</li>
+                            <li>Ви можете завантажити окремі заявки та графіки платежів</li>
+                            <li>Графіки оновлюються автоматично при зміні даних</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Графік по статусах
+        fetch('/Admin/GetStatusChart')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('statusChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.map(d => d.status),
+                        datasets: [{
+                            data: data.map(d => d.count),
+                            backgroundColor: [
+                                '#06b6d4', '#f59e0b', '#10b981', 
+                                '#ef4444', '#2563eb', '#6b7280'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            });
+
+        // Графік по типах кредитів
+        fetch('/Admin/GetCreditTypesChart')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('creditsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.creditType),
+                        datasets: [{
+                            label: 'Кількість заявок',
+                            data: data.map(d => d.count),
+                            backgroundColor: '#2563eb'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    </script>
+}

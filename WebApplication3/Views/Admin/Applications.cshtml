@@ -1,0 +1,302 @@
+﻿@model IEnumerable<WebApplication3.Models.CreditApplication>
+@using WebApplication3.ViewModels
+
+@{
+    ViewData["Title"] = "Управління заявками";
+    var filter = ViewBag.Filter as ApplicationFilterViewModel;
+    var credits = ViewBag.Credits as List<Credit>;
+    var statuses = ViewBag.Statuses as ApplicationStatus[];
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-file-alt text-primary me-2"></i>
+            Управління заявками
+        </h1>
+        <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Назад
+        </a>
+    </div>
+
+    <!-- Фільтри -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-filter me-2"></i>
+                Фільтри та пошук
+            </h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Applications" method="get">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Дата від</label>
+                        <input type="date" name="StartDate" class="form-control" 
+                               value="@filter?.StartDate?.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Дата до</label>
+                        <input type="date" name="EndDate" class="form-control" 
+                               value="@filter?.EndDate?.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Статус</label>
+                        <select name="Status" class="form-select">
+                            <option value="">Всі статуси</option>
+                            @foreach (var status in statuses)
+                            {
+                                <option value="@((int)status)" 
+                                        selected="@(filter?.Status == status)">
+                                    @status
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Тип кредиту</label>
+                        <select name="CreditId" class="form-select">
+                            <option value="">Всі кредити</option>
+                            @foreach (var credit in credits)
+                            {
+                                <option value="@credit.Id" 
+                                        selected="@(filter?.CreditId == credit.Id)">
+                                    @credit.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Пошук</label>
+                        <input type="text" name="SearchTerm" class="form-control" 
+                               placeholder="Ім'я, телефон або email" 
+                               value="@filter?.SearchTerm">
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>
+                            Пошук
+                        </button>
+                        <a asp-action="Applications" class="btn btn-outline-secondary">
+                            <i class="fas fa-redo me-2"></i>
+                            Скинути
+                        </a>
+                        <button type="button" class="btn btn-outline-success ms-auto" 
+                                onclick="downloadReport()">
+                            <i class="fas fa-file-pdf me-2"></i>
+                            Експорт PDF
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">Всього заявок</h6>
+                    <h3 class="fw-bold">@Model.Count()</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">На розгляді</h6>
+                    <h3 class="fw-bold">
+                        @Model.Count(a => a.Status == ApplicationStatus.New || 
+                                         a.Status == ApplicationStatus.UnderReview)
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">Схвалено</h6>
+                    <h3 class="fw-bold">
+                        @Model.Count(a => a.Status == ApplicationStatus.Approved)
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">Загальна сума</h6>
+                    <h6 class="fw-bold">@Model.Sum(a => a.Amount).ToString("N0") грн</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблиця заявок -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>№</th>
+                            <th>Дата</th>
+                            <th>Клієнт</th>
+                            <th>Контакти</th>
+                            <th>Кредит</th>
+                            <th>Сума</th>
+                            <th>Термін</th>
+                            <th>Статус</th>
+                            <th class="text-center">Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var app in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>#@app.Id</strong>
+                                </td>
+                                <td>
+                                    <small>@app.ApplicationDate.ToString("dd.MM.yyyy")</small><br>
+                                    <small class="text-muted">@app.ApplicationDate.ToString("HH:mm")</small>
+                                </td>
+                                <td>
+                                    <strong>@app.CustomerName</strong>
+                                    @if (app.User != null)
+                                    {
+                                        <br><small class="text-muted">
+                                            <i class="fas fa-user me-1"></i>@app.User.Email
+                                        </small>
+                                    }
+                                </td>
+                                <td>
+                                    <small>
+                                        <i class="fas fa-phone me-1"></i>@app.Phone<br>
+                                        <i class="fas fa-envelope me-1"></i>@app.Email
+                                    </small>
+                                </td>
+                                <td>
+                                    <i class="fas @app.Credit?.IconClass me-1 text-primary"></i>
+                                    @app.Credit?.Name
+                                </td>
+                                <td>
+                                    <strong>@app.Amount.ToString("N0") грн</strong>
+                                </td>
+                                <td>@app.TermMonths міс.</td>
+                                <td>
+                                    <span class="badge @GetStatusClass(app.Status)">
+                                        @GetStatusName(app.Status)
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="ApplicationDetails" asp-route-id="@app.Id" 
+                                           class="btn btn-sm btn-info" title="Деталі">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-success" 
+                                                onclick="changeStatus(@app.Id, 'Approved')" 
+                                                title="Схвалити">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                onclick="changeStatus(@app.Id, 'Rejected')" 
+                                                title="Відхилити">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-inbox fa-4x mb-3"></i>
+                    <h5>Заявки не знайдено</h5>
+                    <p>Спробуйте змінити параметри фільтрації</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusClass(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "bg-info",
+            ApplicationStatus.UnderReview => "bg-warning",
+            ApplicationStatus.DocumentsRequired => "bg-warning",
+            ApplicationStatus.DocumentsVerification => "bg-warning",
+            ApplicationStatus.Approved => "bg-success",
+            ApplicationStatus.Rejected => "bg-danger",
+            ApplicationStatus.Issued => "bg-primary",
+            ApplicationStatus.Cancelled => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusName(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "Нова",
+            ApplicationStatus.UnderReview => "На розгляді",
+            ApplicationStatus.DocumentsRequired => "Потрібні документи",
+            ApplicationStatus.DocumentsVerification => "Перевірка",
+            ApplicationStatus.Approved => "Схвалено",
+            ApplicationStatus.Rejected => "Відхилено",
+            ApplicationStatus.Issued => "Видано",
+            ApplicationStatus.Cancelled => "Скасовано",
+            _ => status.ToString()
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        function changeStatus(id, status) {
+            if (confirm('Ви впевнені що хочете змінити статус заявки?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("UpdateStatus", "Admin")';
+                
+                const csrfToken = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (csrfToken) {
+                    form.appendChild(csrfToken.cloneNode());
+                }
+                
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'id';
+                idInput.value = id;
+                form.appendChild(idInput);
+                
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'status';
+                statusInput.value = status;
+                form.appendChild(statusInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+        
+        function downloadReport() {
+            const form = document.querySelector('form');
+            const params = new URLSearchParams(new FormData(form));
+            window.location.href = '@Url.Action("GenerateReport", "Admin")?' + params.toString();
+        }
+    </script>
+}

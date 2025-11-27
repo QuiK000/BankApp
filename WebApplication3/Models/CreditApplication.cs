@@ -3,6 +3,33 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApplication3.Models
 {
+    public enum ApplicationStatus
+    {
+        [Display(Name = "Нова заявка")]
+        New,
+        
+        [Display(Name = "На розгляді")]
+        UnderReview,
+        
+        [Display(Name = "Потрібні документи")]
+        DocumentsRequired,
+        
+        [Display(Name = "Перевірка документів")]
+        DocumentsVerification,
+        
+        [Display(Name = "Схвалено")]
+        Approved,
+        
+        [Display(Name = "Відхилено")]
+        Rejected,
+        
+        [Display(Name = "Видано")]
+        Issued,
+        
+        [Display(Name = "Скасовано")]
+        Cancelled
+    }
+    
     public class CreditApplication
     {
         [Key]
@@ -35,11 +62,19 @@ namespace WebApplication3.Models
         public DateTime ApplicationDate { get; set; } = DateTime.Now;
         
         [Display(Name = "Статус")]
-        public string Status { get; set; } = "Нова заявка";
+        public ApplicationStatus Status { get; set; } = ApplicationStatus.New;
+        
+        [Display(Name = "Коментар менеджера")]
+        public string? ManagerComment { get; set; }
+        
+        [Display(Name = "Дата зміни статусу")]
+        public DateTime? StatusChangeDate { get; set; }
         
         public int CreditId { get; set; }
-        
         public Credit? Credit { get; set; }
+        
+        public string? UserId { get; set; }
+        public ApplicationUser? User { get; set; }
         
         [Display(Name = "Щомісячний платіж")]
         public decimal MonthlyPayment
@@ -55,5 +90,11 @@ namespace WebApplication3.Models
                        / (decimal)(Math.Pow((double)(1 + monthlyRate), TermMonths) - 1);
             }
         }
+        
+        [Display(Name = "Загальна сума виплат")]
+        public decimal TotalAmount => MonthlyPayment * TermMonths;
+        
+        [Display(Name = "Переплата")]
+        public decimal Overpayment => TotalAmount - Amount;
     }
 }

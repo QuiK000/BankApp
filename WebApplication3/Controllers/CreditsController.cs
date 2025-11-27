@@ -1,116 +1,208 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication3.db;
 using WebApplication3.Models;
+using WebApplication3.Services;
 
-namespace WebApplication3.Controllers;
-
-public class CreditsController(BankContext context) : Controller
+namespace WebApplication3.Controllers
 {
-    // GET: Credits
-    public async Task<IActionResult> Index()
+    public class CreditsController : Controller
     {
-        var credits = await context.Credits.ToListAsync();
-        return View(credits);
-    }
+        private readonly BankContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IPdfService _pdfService;
 
-    // GET: Credits/Details/5
-    public async Task<IActionResult> Details(int? id)
-    {
-        if (id == null)
+        public CreditsController(
+            BankContext context, 
+            UserManager<ApplicationUser> userManager,
+            IPdfService pdfService)
         {
-            return NotFound();
+            _context = context;
+            _userManager = userManager;
+            _pdfService = pdfService;
         }
 
-        var credit = await context.Credits
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (credit == null)
+        // GET: Credits
+        [AllowAnonymous]
+        public async Task<IActionResult> Index()
         {
-            return NotFound();
+            var credits = await _context.Credits.ToListAsync();
+            return View(credits);
         }
 
-        return View(credit);
-    }
-
-    // GET: Credits/Apply/5
-    public async Task<IActionResult> Apply(int? id)
-    {
-        if (id == null)
+        // GET: Credits/Details/5
+        [AllowAnonymous]
+        public async Task<IActionResult> Details(int? id)
         {
-            return NotFound();
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var credit = await _context.Credits
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (credit == null)
+            {
+                return NotFound();
+            }
+
+            return View(credit);
         }
 
-        var credit = await context.Credits.FindAsync(id);
-
-        if (credit == null)
+        // GET: Credits/Calculator
+        [AllowAnonymous]
+        public async Task<IActionResult> Calculator()
         {
-            return NotFound();
+            ViewBag.Credits = await _context.Credits.ToListAsync();
+            return View();
         }
 
-        ViewBag.Credit = credit;
-
-        var application = new CreditApplication
+        // GET: Credits/Apply/5
+        [Authorize]
+        public async Task<IActionResult> Apply(int? id)
         {
-            CreditId = credit.Id,
-            Amount = credit.MinAmount,
-            TermMonths = credit.MinTermMonths
-        };
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-        return View(application);
-    }
+            var credit = await _context.Credits.FindAsync(id);
 
-    // POST: Credits/Apply
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Apply(CreditApplication application)
-    {
-        if (ModelState.IsValid)
-        {
-            application.Id = 0;
-            application.ApplicationDate = DateTime.Now;
-            application.Status = "Нова заявка";
+            if (credit == null)
+            {
+                return NotFound();
+            }
 
-            context.CreditApplications.Add(application);
-            await context.SaveChangesAsync();
+            var user = await _userManager.GetUserAsync(User);
+            ViewBag.Credit = credit;
 
-            return RedirectToAction(nameof(Success), new { id = application.Id });
+            var application = new CreditApplication
+            {
+                CreditId = credit.Id,
+                Amount = credit.MinAmount,
+                TermMonths = credit.MinTermMonths,
+                CustomerName = user?.FullName ?? string.Empty,
+                Phone = user?.PhoneNumber ?? string.Empty,
+                Email = user?.Email ?? string.Empty
+            };
+
+            return View(application);
         }
 
-        var credit = await context.Credits.FindAsync(application.CreditId);
-        ViewBag.Credit = credit;
-
-        return View(application);
-    }
-
-    // GET: Credits/Success/5
-    public async Task<IActionResult> Success(int? id)
-    {
-        if (id == null)
+        // POST: Credits/Apply
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Apply(CreditApplication application)
         {
-            return NotFound();
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                
+                application.Id = 0;
+                application.ApplicationDate = DateTime.Now;
+                application.Status = ApplicationStatus.New;
+                application.UserId = user?.Id;
+
+                _context.CreditApplications.Add(application);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Success), new { id = application.Id });
+            }
+
+            var credit = await _context.Credits.FindAsync(application.CreditId);
+            ViewBag.Credit = credit;
+
+            return View(application);
         }
 
-        var application = await context.CreditApplications
-            .Include(a => a.Credit)
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (application == null)
+        // GET: Credits/Success/5
+        [Authorize]
+        public async Task<IActionResult> Success(int? id)
         {
-            return NotFound();
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var application = await _context.CreditApplications
+                .Include(a => a.Credit)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (application == null)
+            {
+                return NotFound();
+            }
+
+            return View(application);
         }
 
-        return View(application);
-    }
+        // GET: Credits/MyApplications
+        [Authorize]
+        public async Task<IActionResult> MyApplications()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            
+            var applications = await _context.CreditApplications
+                .Include(a => a.Credit)
+                .Where(a => a.UserId == user!.Id)
+                .OrderByDescending(a => a.ApplicationDate)
+                .ToListAsync();
 
-    // GET: Credits/MyApplications
-    public async Task<IActionResult> MyApplications()
-    {
-        var applications = await context.CreditApplications
-            .Include(a => a.Credit)
-            .OrderByDescending(a => a.ApplicationDate)
-            .ToListAsync();
+            return View(applications);
+        }
 
-        return View(applications);
+        // GET: Credits/DownloadApplication/5
+        [Authorize]
+        public async Task<IActionResult> DownloadApplication(int id)
+        {
+            var application = await _context.CreditApplications
+                .Include(a => a.Credit)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (application == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("Manager");
+            
+            if (!isAdmin && application.UserId != user?.Id)
+            {
+                return Forbid();
+            }
+
+            var pdfBytes = _pdfService.GenerateCreditApplicationPdf(application);
+            return File(pdfBytes, "application/pdf", $"Application_{application.Id}.pdf");
+        }
+
+        // GET: Credits/DownloadSchedule/5
+        [Authorize]
+        public async Task<IActionResult> DownloadSchedule(int id)
+        {
+            var application = await _context.CreditApplications
+                .Include(a => a.Credit)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (application == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("Manager");
+            
+            if (!isAdmin && application.UserId != user?.Id)
+            {
+                return Forbid();
+            }
+
+            var pdfBytes = _pdfService.GeneratePaymentSchedulePdf(application);
+            return File(pdfBytes, "application/pdf", $"Schedule_{application.Id}.pdf");
+        }
     }
 }

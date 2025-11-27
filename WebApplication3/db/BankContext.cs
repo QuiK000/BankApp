@@ -1,10 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WebApplication3.Models;
 
 namespace WebApplication3.db
 {
-    public class BankContext(DbContextOptions<BankContext> options) : DbContext(options)
+    public class BankContext : IdentityDbContext<ApplicationUser>
     {
+        public BankContext(DbContextOptions<BankContext> options) : base(options)
+        {
+        }
+
         public DbSet<Credit> Credits { get; set; }
         public DbSet<CreditApplication> CreditApplications { get; set; }
         public DbSet<Customer> Customers { get; set; }
@@ -71,6 +76,12 @@ namespace WebApplication3.db
                 .WithMany(s => s.CustomerServices)
                 .HasForeignKey(cs => cs.ServiceId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            modelBuilder.Entity<CreditApplication>()
+                .HasOne(ca => ca.User)
+                .WithMany(u => u.CreditApplications)
+                .HasForeignKey(ca => ca.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
             
             modelBuilder.Entity<Credit>().HasData(
                 new Credit
@@ -195,45 +206,6 @@ namespace WebApplication3.db
                     ServiceType = "PaymentHoliday",
                     IconClass = "fa-umbrella-beach",
                     IsActive = true
-                }
-            );
-            
-            modelBuilder.Entity<Customer>().HasData(
-                new Customer
-                {
-                    Id = 1,
-                    FullName = "Іванов Іван Іванович",
-                    Phone = "+380501234567",
-                    Email = "ivanov@example.com",
-                    TaxNumber = "1234567890",
-                    DateOfBirth = new DateTime(1985, 5, 15),
-                    Address = "м. Київ, вул. Хрещатик, 1",
-                    RegistrationDate = DateTime.Now.AddMonths(-6),
-                    Status = "Активний"
-                },
-                new Customer
-                {
-                    Id = 2,
-                    FullName = "Петренко Олена Петрівна",
-                    Phone = "+380672345678",
-                    Email = "petrenko@example.com",
-                    TaxNumber = "0987654321",
-                    DateOfBirth = new DateTime(1990, 8, 22),
-                    Address = "м. Львів, пр. Свободи, 15",
-                    RegistrationDate = DateTime.Now.AddMonths(-12),
-                    Status = "Активний"
-                },
-                new Customer
-                {
-                    Id = 3,
-                    FullName = "Сидоренко Олег Миколайович",
-                    Phone = "+380933456789",
-                    Email = "sydorenko@example.com",
-                    TaxNumber = "5555666677",
-                    DateOfBirth = new DateTime(1982, 3, 10),
-                    Address = "м. Одеса, вул. Дерибасівська, 20",
-                    RegistrationDate = DateTime.Now.AddMonths(-18),
-                    Status = "Активний"
                 }
             );
         }

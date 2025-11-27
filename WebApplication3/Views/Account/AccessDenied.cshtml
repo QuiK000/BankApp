@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = "Доступ заборонено";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-lock fa-5x text-danger"></i>
+                </div>
+                <h1 class="display-4 fw-bold text-danger mb-3">Доступ заборонено</h1>
+                <p class="lead text-muted mb-4">
+                    У вас немає прав для перегляду цієї сторінки
+                </p>
+                
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Можливі причини:</h5>
+                        <ul class="text-start text-muted">
+                            <li>Ви не увійшли до системи</li>
+                            <li>У вас недостатньо прав для доступу</li>
+                            <li>Ваша сесія закінчилася</li>
+                            <li>Ви намагаєтесь отримати доступ до захищеної сторінки</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a asp-controller="Credits" asp-action="Index" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home me-2"></i>
+                        На головну
+                    </a>
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Увійти
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fa-lock {
+        animation: shake 0.5s ease-in-out;
+    }
+</style>

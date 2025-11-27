@@ -40,8 +40,8 @@
                                 <i class="fas fa-hashtag me-1"></i>
                                 Заявка №@app.Id
                             </span>
-                            <span class="badge @(app.Status == "Нова заявка" ? "bg-info" : app.Status == "Схвалено" ? "bg-success" : "bg-warning")">
-                                @app.Status
+                            <span class="badge @GetStatusClass(app.Status)">
+                                @GetStatusDisplayName(app.Status)
                             </span>
                         </div>
                         
@@ -96,19 +96,47 @@
                                     @app.Email
                                 </div>
                             </div>
+
+                            @if (!string.IsNullOrEmpty(app.ManagerComment))
+                            {
+                                <div class="alert alert-info mt-3 mb-0">
+                                    <small>
+                                        <i class="fas fa-comment me-1"></i>
+                                        <strong>Коментар менеджера:</strong><br>
+                                        @app.ManagerComment
+                                    </small>
+                                </div>
+                            }
                         </div>
                         
                         <div class="card-footer bg-transparent">
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <small class="text-muted">
                                     <i class="fas fa-percent me-1"></i>
                                     Ставка: @app.Credit.InterestRate%
                                 </small>
-                                <a asp-action="Details" asp-route-id="@app.CreditId" 
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Деталі кредиту
-                                </a>
+                                <div>
+                                    <a asp-controller="Credits" asp-action="DownloadApplication" 
+                                       asp-route-id="@app.Id" 
+                                       class="btn btn-sm btn-outline-success me-1"
+                                       title="Завантажити заявку">
+                                        <i class="fas fa-download me-1"></i>
+                                        PDF
+                                    </a>
+                                    <a asp-controller="Credits" asp-action="DownloadSchedule" 
+                                       asp-route-id="@app.Id" 
+                                       class="btn btn-sm btn-outline-info me-1"
+                                       title="Завантажити графік">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        Графік
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@app.CreditId" 
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Деталі кредиту">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Деталі
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -123,18 +151,22 @@
                 </div>
                 <div>
                     <h6 class="fw-bold mb-2">Інформація про статуси</h6>
-                    <div class="row">
-                        <div class="col-md-4">
+                    <div class="row g-2">
+                        <div class="col-md-3 col-6">
                             <span class="badge bg-info me-2">Нова заявка</span>
-                            <small>- на розгляді</small>
+                            <small>- подано</small>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3 col-6">
+                            <span class="badge bg-warning me-2">На розгляді</span>
+                            <small>- обробка</small>
+                        </div>
+                        <div class="col-md-3 col-6">
                             <span class="badge bg-success me-2">Схвалено</span>
-                            <small>- заявку схвалено</small>
+                            <small>- схвалено</small>
                         </div>
-                        <div class="col-md-4">
-                            <span class="badge bg-warning me-2">Очікування</span>
-                            <small>- потрібні документи</small>
+                        <div class="col-md-3 col-6">
+                            <span class="badge bg-danger me-2">Відхилено</span>
+                            <small>- відмовлено</small>
                         </div>
                     </div>
                 </div>
@@ -142,6 +174,40 @@
         </div>
     }
 </div>
+
+@functions {
+    string GetStatusClass(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "bg-info",
+            ApplicationStatus.UnderReview => "bg-warning text-dark",
+            ApplicationStatus.DocumentsRequired => "bg-warning text-dark",
+            ApplicationStatus.DocumentsVerification => "bg-warning text-dark",
+            ApplicationStatus.Approved => "bg-success",
+            ApplicationStatus.Rejected => "bg-danger",
+            ApplicationStatus.Issued => "bg-primary",
+            ApplicationStatus.Cancelled => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusDisplayName(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "Нова заявка",
+            ApplicationStatus.UnderReview => "На розгляді",
+            ApplicationStatus.DocumentsRequired => "Потрібні документи",
+            ApplicationStatus.DocumentsVerification => "Перевірка документів",
+            ApplicationStatus.Approved => "Схвалено",
+            ApplicationStatus.Rejected => "Відхилено",
+            ApplicationStatus.Issued => "Видано",
+            ApplicationStatus.Cancelled => "Скасовано",
+            _ => status.ToString()
+        };
+    }
+}
 
 <style>
     .application-card {
@@ -151,5 +217,15 @@
     
     .application-card:hover {
         transform: translateY(-5px);
+    }
+    
+    .credit-icon-small {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border-radius: 10px;
     }
 </style>

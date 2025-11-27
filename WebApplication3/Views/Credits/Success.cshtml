@@ -1,7 +1,7 @@
 ﻿@model WebApplication3.Models.CreditApplication
 
 @{
-    ViewData["Title"] = "Заявка прийнята";
+ViewData["Title"] = "Заявка прийнята";
 }
 
 <div class="container">
@@ -16,7 +16,7 @@
                     Дякуємо за звернення до BankCredit
                 </p>
             </div>
-            
+
             <div class="card shadow-lg border-0 mb-4">
                 <div class="card-header bg-gradient-primary text-white py-3">
                     <h5 class="mb-0">
@@ -24,7 +24,7 @@
                         Деталі вашої заявки
                     </h5>
                 </div>
-                
+
                 <div class="card-body p-4">
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -46,14 +46,14 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <hr>
-                    
+
                     <h6 class="fw-bold mb-3 text-primary">
                         <i class="fas fa-user me-2"></i>
                         Контактна інформація
                     </h6>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-4 mb-2">
                             <small class="text-muted d-block">Ім'я</small>
@@ -68,14 +68,14 @@
                             <strong>@Model.Email</strong>
                         </div>
                     </div>
-                    
+
                     <hr>
-                    
+
                     <h6 class="fw-bold mb-3 text-primary">
                         <i class="fas fa-money-bill-wave me-2"></i>
                         Параметри кредиту
                     </h6>
-                    
+
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <div class="stat-card text-center p-3 bg-light rounded">
@@ -102,7 +102,22 @@
                             </div>
                         </div>
                     </div>
-                    
+
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <div class="stat-card text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-2">Загальна сума виплат</small>
+                                <div class="h5 fw-bold text-info mb-0">@Model.TotalAmount.ToString("N2") грн</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="stat-card text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-2">Переплата</small>
+                                <div class="h5 fw-bold text-danger mb-0">@Model.Overpayment.ToString("N2") грн</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="alert alert-success border-0 mt-3">
                         <div class="d-flex">
                             <div class="me-3">
@@ -114,13 +129,14 @@
                                     <li>Наш менеджер зв'яжеться з вами протягом 24 годин</li>
                                     <li>Підготуйте необхідні документи для верифікації</li>
                                     <li>Очікуйте на рішення по вашій заявці</li>
+                                    <li>Відстежуйте статус заявки в особистому кабінеті</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="d-grid gap-2 d-md-flex justify-content-md-center">
                 <a asp-action="Index" class="btn btn-primary btn-lg">
                     <i class="fas fa-home me-2"></i>
@@ -129,6 +145,11 @@
                 <a asp-action="MyApplications" class="btn btn-outline-primary btn-lg">
                     <i class="fas fa-list me-2"></i>
                     Мої заявки
+                </a>
+                <a asp-controller="Credits" asp-action="DownloadApplication"
+                   asp-route-id="@Model.Id" class="btn btn-outline-success btn-lg">
+                    <i class="fas fa-download me-2"></i>
+                    Завантажити PDF
                 </a>
             </div>
         </div>
@@ -139,28 +160,8 @@
     .animate-fade-in {
         animation: fadeIn 0.5s ease-in;
     }
-    
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
+
     .success-icon i {
         animation: scaleIn 0.5s ease-out;
-    }
-    
-    @@keyframes scaleIn {
-        from {
-            transform: scale(0);
-        }
-        to {
-            transform: scale(1);
-        }
     }
 </style>

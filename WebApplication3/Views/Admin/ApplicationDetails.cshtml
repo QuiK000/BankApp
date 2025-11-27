@@ -1,0 +1,315 @@
+﻿@model WebApplication3.Models.CreditApplication
+
+@{
+    ViewData["Title"] = $"Заявка #{Model.Id}";
+}
+
+<div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Dashboard">Панель</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="Applications">Заявки</a>
+            </li>
+            <li class="breadcrumb-item active">Заявка #@Model.Id</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-file-alt text-primary me-2"></i>
+            Заявка #@Model.Id
+        </h1>
+        <div>
+            <a asp-controller="Credits" asp-action="DownloadApplication" 
+               asp-route-id="@Model.Id" class="btn btn-outline-success">
+                <i class="fas fa-download me-2"></i>
+                Завантажити PDF
+            </a>
+            <a asp-action="Applications" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Назад
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <!-- Інформація про заявку -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        Інформація про заявку
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block mb-1">Номер заявки</small>
+                            <strong class="fs-5">#@Model.Id</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block mb-1">Дата подання</small>
+                            <strong>@Model.ApplicationDate.ToString("dd.MM.yyyy HH:mm")</strong>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="fw-bold mb-3 text-primary">
+                        <i class="fas fa-user me-2"></i>
+                        Інформація про клієнта
+                    </h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted d-block">Ім'я</small>
+                            <strong>@Model.CustomerName</strong>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted d-block">Телефон</small>
+                            <strong>@Model.Phone</strong>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted d-block">Email</small>
+                            <strong>@Model.Email</strong>
+                        </div>
+                    </div>
+
+                    @if (Model.User != null)
+                    {
+                        <div class="alert alert-info border-0">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <strong>Зареєстрований користувач:</strong> @Model.User.Email
+                            <br>
+                            <small>Дата реєстрації: @Model.User.RegistrationDate.ToString("dd.MM.yyyy")</small>
+                        </div>
+                    }
+
+                    <hr>
+
+                    <h6 class="fw-bold mb-3 text-primary">
+                        <i class="fas fa-money-bill-wave me-2"></i>
+                        Параметри кредиту
+                    </h6>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <small class="text-muted d-block mb-1">Тип кредиту</small>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas @Model.Credit?.IconClass fa-2x text-primary me-3"></i>
+                                        <div>
+                                            <strong>@Model.Credit?.Name</strong>
+                                            <br>
+                                            <small class="text-muted">Ставка: @Model.Credit?.InterestRate%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <small class="text-muted d-block">Сума</small>
+                                        <strong class="text-primary">@Model.Amount.ToString("N0") грн</strong>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <small class="text-muted d-block">Термін</small>
+                                        <strong class="text-primary">@Model.TermMonths міс.</strong>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <small class="text-muted d-block">Щомісячний платіж</small>
+                                        <strong class="text-success fs-5">@Model.MonthlyPayment.ToString("N2") грн</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-2">
+                            <div class="text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block">Загальна сума виплат</small>
+                                <strong class="text-info">@Model.TotalAmount.ToString("N2") грн</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block">Переплата</small>
+                                <strong class="text-danger">@Model.Overpayment.ToString("N2") грн</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Коментар менеджера -->
+            @if (!string.IsNullOrEmpty(Model.ManagerComment))
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comment text-primary me-2"></i>
+                            Коментар менеджера
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">@Model.ManagerComment</p>
+                        @if (Model.StatusChangeDate.HasValue)
+                        {
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                @Model.StatusChangeDate.Value.ToString("dd.MM.yyyy HH:mm")
+                            </small>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Статус заявки -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        Управління заявкою
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Поточний статус</label>
+                        <div class="p-3 text-center bg-light rounded">
+                            <span class="badge @GetStatusClass(Model.Status) fs-6">
+                                @GetStatusDisplayName(Model.Status)
+                            </span>
+                        </div>
+                    </div>
+
+                    <form asp-action="UpdateStatus" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Змінити статус</label>
+                            <select name="status" class="form-select" required>
+                                <option value="">Оберіть статус</option>
+                                @foreach (ApplicationStatus status in Enum.GetValues(typeof(ApplicationStatus)))
+                                {
+                                    <option value="@status">@GetStatusDisplayName(status)</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Коментар</label>
+                            <textarea name="comment" class="form-control" rows="3" 
+                                      placeholder="Додайте коментар (необов'язково)"></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Оновити статус
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Швидкі дії -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt text-warning me-2"></i>
+                        Швидкі дії
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <form asp-action="UpdateStatus" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="status" value="@ApplicationStatus.Approved" />
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-check me-2"></i>
+                                Схвалити
+                            </button>
+                        </form>
+
+                        <form asp-action="UpdateStatus" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="status" value="@ApplicationStatus.Rejected" />
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-times me-2"></i>
+                                Відхилити
+                            </button>
+                        </form>
+
+                        <form asp-action="UpdateStatus" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="status" value="@ApplicationStatus.DocumentsRequired" />
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="fas fa-file me-2"></i>
+                                Запросити документи
+                            </button>
+                        </form>
+
+                        <a asp-controller="Credits" asp-action="DownloadSchedule" 
+                           asp-route-id="@Model.Id" 
+                           class="btn btn-outline-info w-100">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Графік платежів
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusClass(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "bg-info",
+            ApplicationStatus.UnderReview => "bg-warning text-dark",
+            ApplicationStatus.DocumentsRequired => "bg-warning text-dark",
+            ApplicationStatus.DocumentsVerification => "bg-warning text-dark",
+            ApplicationStatus.Approved => "bg-success",
+            ApplicationStatus.Rejected => "bg-danger",
+            ApplicationStatus.Issued => "bg-primary",
+            ApplicationStatus.Cancelled => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusDisplayName(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "Нова заявка",
+            ApplicationStatus.UnderReview => "На розгляді",
+            ApplicationStatus.DocumentsRequired => "Потрібні документи",
+            ApplicationStatus.DocumentsVerification => "Перевірка документів",
+            ApplicationStatus.Approved => "Схвалено",
+            ApplicationStatus.Rejected => "Відхилено",
+            ApplicationStatus.Issued => "Видано",
+            ApplicationStatus.Cancelled => "Скасовано",
+            _ => status.ToString()
+        };
+    }
+}

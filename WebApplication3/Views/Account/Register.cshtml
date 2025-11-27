@@ -1,0 +1,99 @@
+﻿@model WebApplication3.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Реєстрація";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 mt-5">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-plus fa-4x text-primary mb-3"></i>
+                        <h2 class="fw-bold">Реєстрація</h2>
+                        <p class="text-muted">Створіть обліковий запис</p>
+                    </div>
+
+                    <form asp-action="Register" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label">
+                                <i class="fas fa-user me-1"></i> Повне ім'я
+                            </label>
+                            <input asp-for="FullName" class="form-control" 
+                                   placeholder="Іванов Іван Іванович" autofocus />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i> Email
+                                </label>
+                                <input asp-for="Email" class="form-control" 
+                                       placeholder="example@email.com" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Phone" class="form-label">
+                                    <i class="fas fa-phone me-1"></i> Телефон
+                                </label>
+                                <input asp-for="Phone" class="form-control" 
+                                       placeholder="+380501234567" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Password" class="form-label">
+                                    <i class="fas fa-lock me-1"></i> Пароль
+                                </label>
+                                <input asp-for="Password" class="form-control" 
+                                       placeholder="Мінімум 6 символів" />
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label">
+                                    <i class="fas fa-lock me-1"></i> Підтвердження
+                                </label>
+                                <input asp-for="ConfirmPassword" class="form-control" 
+                                       placeholder="Повторіть пароль" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info border-0 mb-4">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                Пароль має містити мінімум 6 символів, включаючи великі та малі літери та цифри
+                            </small>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Зареєструватися
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Вже є акаунт?
+                                <a asp-action="Login" class="text-primary fw-bold">Увійти</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
