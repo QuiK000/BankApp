@@ -1,0 +1,124 @@
+﻿@model WebApplication3.Models.BlacklistEntry
+
+@{
+    ViewData["Title"] = "Додати до чорного списку";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-danger text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Додати особу до чорного списку
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="alert alert-warning border-0 mb-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Увага!</strong> Додавання особи до чорного списку заборонить їй отримувати кредити в банку.
+                    </div>
+
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        
+                        <h5 class="fw-bold mb-3 text-primary">
+                            <i class="fas fa-user me-2"></i>
+                            Особисті дані
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="FullName" class="form-label fw-bold"></label>
+                                <input asp-for="FullName" class="form-control" placeholder="Іванов Іван Іванович" />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label asp-for="TaxNumber" class="form-label fw-bold"></label>
+                                <input asp-for="TaxNumber" class="form-control" placeholder="1234567890" maxlength="10" />
+                                <span asp-validation-for="TaxNumber" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="Phone" class="form-label"></label>
+                                <input asp-for="Phone" class="form-control" placeholder="+380501234567" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="example@email.com" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label asp-for="DateOfBirth" class="form-label"></label>
+                                <input asp-for="DateOfBirth" class="form-control" type="date" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="fw-bold mb-3 text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Причина блокування
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Reason" class="form-label fw-bold"></label>
+                                <select asp-for="Reason" class="form-select" asp-items="Html.GetEnumSelectList<BlacklistReason>()">
+                                    <option value="">Оберіть причину</option>
+                                </select>
+                                <span asp-validation-for="Reason" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label asp-for="DebtAmount" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="DebtAmount" class="form-control" type="number" step="0.01" />
+                                    <span class="input-group-text">грн</span>
+                                </div>
+                                <span asp-validation-for="DebtAmount" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold"></label>
+                            <textarea asp-for="Description" class="form-control" rows="4" 
+                                      placeholder="Детальний опис причини блокування"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label asp-for="Notes" class="form-label"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="2" 
+                                      placeholder="Додаткові примітки"></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>
+                                Скасувати
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-ban me-2"></i>
+                                Додати до чорного списку
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,298 +1,221 @@
-﻿@model List<WebApplication3.Controllers.CreditPerformanceModel>
+﻿@model WebApplication3.Models.CreditScore
 
 @{
-    ViewData["Title"] = "Ефективність кредитів";
+ViewData["Title"] = "Перевірка кредитоспроможності";
+var isBlacklisted = ViewBag.IsBlacklisted as bool? ?? false;
 }
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="fw-bold">
-            <i class="fas fa-trophy text-warning me-2"></i>
-            Ефективність кредитних продуктів
+<div class="container">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary">
+            <i class="fas fa-user-check me-2"></i>
+            Перевірка кредитоспроможності
         </h1>
-        <a asp-action="Dashboard" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>
-            Назад
-        </a>
+        <p class="lead text-muted">Дізнайтеся свій кредитний рейтинг</p>
     </div>
 
-    <!-- Загальна статистика -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card border-0 shadow-sm bg-primary text-white">
-                <div class="card-body text-center">
-                    <h6 class="text-white-50">Всього продуктів</h6>
-                    <h2 class="fw-bold">@Model.Count</h2>
-                </div>
+    @if (isBlacklisted)
+    {
+    <div class="alert alert-danger border-0 shadow-sm mb-4">
+        <div class="d-flex">
+            <div class="me-3">
+                <i class="fas fa-exclamation-triangle fa-3x"></i>
             </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card border-0 shadow-sm bg-success text-white">
-                <div class="card-body text-center">
-                    <h6 class="text-white-50">Всього заявок</h6>
-                    <h2 class="fw-bold">@Model.Sum(m => m.TotalApplications)</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card border-0 shadow-sm bg-info text-white">
-                <div class="card-body text-center">
-                    <h6 class="text-white-50">Схвалено</h6>
-                    <h2 class="fw-bold">@Model.Sum(m => m.ApprovedApplications)</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card border-0 shadow-sm bg-warning text-white">
-                <div class="card-body text-center">
-                    <h6 class="text-white-50">Загальна сума</h6>
-                    <h5 class="fw-bold">@Model.Sum(m => m.TotalAmount).ToString("N0") ₴</h5>
-                </div>
+            <div>
+                <h5 class="fw-bold mb-2">Увага!</h5>
+                <p class="mb-0">
+                    На жаль, ви перебуваєте в чорному списку банку.
+                    Зверніться до менеджера для уточнення деталей.
+                </p>
             </div>
         </div>
     </div>
-
-    <!-- Таблиця ефективності -->
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">
-                <i class="fas fa-table me-2 text-primary"></i>
-                Детальна статистика по кредитах
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Назва кредиту</th>
-                            <th class="text-center">Заявок</th>
-                            <th class="text-center">Схвалено</th>
-                            <th class="text-center">Відхилено</th>
-                            <th class="text-center">% Схвалення</th>
-                            <th class="text-end">Загальна сума</th>
-                            <th class="text-end">Середня сума</th>
-                            <th class="text-center">Сер. термін</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.OrderByDescending(m => m.TotalApplications))
-                        {
-                            <tr>
-                                <td>
-                                    <strong class="text-primary">@item.CreditName</strong>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">@item.TotalApplications</span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-success">@item.ApprovedApplications</span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-danger">@item.RejectedApplications</span>
-                                </td>
-                                <td class="text-center">
-                                    <div class="d-flex align-items-center justify-content-center">
-                                        <div class="progress" style="width: 100px; height: 20px;">
-                                            <div class="progress-bar @GetProgressBarClass(item.ApprovalRate)" 
-                                                 style="width: @item.ApprovalRate%">
-                                                @item.ApprovalRate.ToString("F1")%
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-end">
-                                    <strong class="text-success">@item.TotalAmount.ToString("N0") ₴</strong>
-                                </td>
-                                <td class="text-end">
-                                    @item.AverageAmount.ToString("N0") ₴
-                                </td>
-                                <td class="text-center">
-                                    @item.AverageTerm.ToString("F1") міс.
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Графіки -->
+    }
+    else if (Model != null)
+    {
     <div class="row">
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-bar text-primary me-2"></i>
-                        Кількість заявок по продуктах
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="applicationsChart" height="300"></canvas>
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-lg border-0 text-center">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-star fa-4x text-warning"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2">Ваш рейтинг</h2>
+                    <div class="display-1 fw-bold text-primary mb-3">@Model.Rating</div>
+                    <div class="progress mb-3" style="height: 30px;">
+                        <div class="progress-bar @GetRatingProgressClass(Model.Rating)"
+                             style="width: @((Model.TotalScore / 10.0))%">
+                            @Model.TotalScore / 1000
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">@GetRatingDescription(Model.Rating)</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-pie text-success me-2"></i>
-                        Відсоток схвалення
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="approvalChart" height="300"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Рейтинг продуктів -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm border-0">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-gradient-primary text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-medal me-2"></i>
-                        Топ-3 найуспішніших продуктів
+                        <i class="fas fa-chart-line me-2"></i>
+                        Детальний аналіз
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        @foreach (var item in Model.OrderByDescending(m => m.ApprovalRate).Take(3).Select((credit, index) => new { credit, index }))
-                        {
-                            <div class="col-md-4 mb-3">
-                                <div class="card h-100 border-0 @GetRankCardClass(item.index)">
-                                    <div class="card-body text-center text-white">
-                                        <div class="mb-3">
-                                            <i class="fas @GetRankIcon(item.index) fa-3x"></i>
-                                        </div>
-                                        <h4 class="fw-bold">@item.credit.CreditName</h4>
-                                        <div class="display-6 fw-bold mb-2">@item.credit.ApprovalRate.ToString("F1")%</div>
-                                        <p class="mb-1">Заявок: @item.credit.TotalApplications</p>
-                                        <p class="mb-0">Схвалено: @item.credit.ApprovedApplications</p>
-                                    </div>
+                    <div class="row text-center mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Ймовірність дефолту</small>
+                                <div class="h3 fw-bold @GetDefaultProbabilityClass(Model.DefaultProbability)">
+                                    @Model.DefaultProbability.ToString("F1")%
                                 </div>
                             </div>
-                        }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Рекомендована сума</small>
+                                <div class="h3 fw-bold text-success">
+                                    @Model.RecommendedMaxAmount.ToString("N0") грн
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3">Розподіл балів:</h6>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span><i class="fas fa-birthday-cake text-primary me-2"></i>Вік</span>
+                            <strong>@Model.AgeScore / 150</strong>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-primary" style="width: @((Model.AgeScore / 150.0 * 100))%">
+                                @Model.AgeScore
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span><i class="fas fa-history text-success me-2"></i>Кредитна історія</span>
+                            <strong>@Model.CreditHistoryScore / 350</strong>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: @((Model.CreditHistoryScore / 350.0 * 100))%">
+                                @Model.CreditHistoryScore
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span><i class="fas fa-money-bill-wave text-warning me-2"></i>Дохід</span>
+                            <strong>@Model.IncomeScore / 250</strong>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-warning" style="width: @((Model.IncomeScore / 250.0 * 100))%">
+                                @Model.IncomeScore
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span><i class="fas fa-briefcase text-info me-2"></i>Зайнятість</span>
+                            <strong>@Model.EmploymentScore / 150</strong>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-info" style="width: @((Model.EmploymentScore / 150.0 * 100))%">
+                                @Model.EmploymentScore
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span><i class="fas fa-credit-card text-danger me-2"></i>Існуючі борги</span>
+                            <strong>@Model.ExistingDebtsScore / 100</strong>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-danger" style="width: @((Model.ExistingDebtsScore / 100.0 * 100))%">
+                                @Model.ExistingDebtsScore
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <div class="alert alert-info border-0 shadow-sm">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-lightbulb fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-2">Як покращити свій рейтинг?</h6>
+                        <ul class="mb-0 ps-3">
+                            <li>Своєчасно погашайте існуючі кредити</li>
+                            <li>Заповніть додаткову інформацію в профілі</li>
+                            <li>Підтримуйте стабільний дохід</li>
+                            <li>Уникайте прострочених платежів</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a asp-action="Index" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search me-2"></i>
+                    Переглянути доступні кредити
+                </a>
+            </div>
         </div>
     </div>
+    }
+    else
+    {
+    <div class="text-center py-5">
+        <i class="fas fa-calculator fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">Розрахунок кредитного скорингу</h4>
+        <p class="text-muted mb-4">Завантаження даних...</p>
+    </div>
+    }
 </div>
 
 @functions {
-    string GetProgressBarClass(double rate)
-    {
-        if (rate >= 70) return "bg-success";
-        if (rate >= 50) return "bg-warning";
-        return "bg-danger";
-    }
-
-    string GetRankCardClass(int index)
-    {
-        return index switch
-        {
-            0 => "bg-warning",
-            1 => "bg-secondary",
-            2 => "bg-danger",
-            _ => "bg-primary"
-        };
-    }
-
-    string GetRankIcon(int index)
-    {
-        return index switch
-        {
-            0 => "fa-trophy",
-            1 => "fa-medal",
-            2 => "fa-award",
-            _ => "fa-star"
-        };
-    }
+string GetRatingProgressClass(string rating)
+{
+return rating switch
+{
+"A+" => "bg-success",
+"A" => "bg-success",
+"B+" => "bg-primary",
+"B" => "bg-warning",
+"C" => "bg-warning",
+"D" => "bg-danger",
+"E" => "bg-danger",
+_ => "bg-secondary"
+};
 }
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const creditNames = @Html.Raw(Json.Serialize(Model.Select(m => m.CreditName)));
-        const totalApps = @Html.Raw(Json.Serialize(Model.Select(m => m.TotalApplications)));
-        const approvedApps = @Html.Raw(Json.Serialize(Model.Select(m => m.ApprovedApplications)));
-        const rejectedApps = @Html.Raw(Json.Serialize(Model.Select(m => m.RejectedApplications)));
-        const approvalRates = @Html.Raw(Json.Serialize(Model.Select(m => m.ApprovalRate)));
+string GetRatingDescription(string rating)
+{
+return rating switch
+{
+"A+" => "Відмінний кредитний рейтинг",
+"A" => "Дуже хороший рейтинг",
+"B+" => "Хороший рейтинг",
+"B" => "Задовільний рейтинг",
+"C" => "Посередній рейтинг",
+"D" => "Низький рейтинг",
+"E" => "Дуже низький рейтинг",
+_ => "Невідомий рейтинг"
+};
+}
 
-        // Графік заявок
-        const ctx1 = document.getElementById('applicationsChart').getContext('2d');
-        new Chart(ctx1, {
-            type: 'bar',
-            data: {
-                labels: creditNames,
-                datasets: [{
-                    label: 'Всього заявок',
-                    data: totalApps,
-                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
-                }, {
-                    label: 'Схвалено',
-                    data: approvedApps,
-                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                }, {
-                    label: 'Відхилено',
-                    data: rejectedApps,
-                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Графік схвалення
-        const ctx2 = document.getElementById('approvalChart').getContext('2d');
-        new Chart(ctx2, {
-            type: 'doughnut',
-            data: {
-                labels: creditNames,
-                datasets: [{
-                    data: approvalRates,
-                    backgroundColor: [
-                        'rgba(37, 99, 235, 0.8)',
-                        'rgba(16, 185, 129, 0.8)',
-                        'rgba(245, 158, 11, 0.8)',
-                        'rgba(239, 68, 68, 0.8)',
-                        'rgba(139, 92, 246, 0.8)'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.label + ': ' + context.parsed.toFixed(1) + '%';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    </script>
+string GetDefaultProbabilityClass(decimal probability)
+{
+if (probability < 10) return "text-success";
+if (probability < 25) return "text-warning";
+return "text-danger";
+}
 }

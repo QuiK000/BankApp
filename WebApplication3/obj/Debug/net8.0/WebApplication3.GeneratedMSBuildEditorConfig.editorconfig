@@ -86,6 +86,42 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQW5hbHl0aWNzXFRpbWVBbmFseXNpcy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/c\#project/WebApplication3/WebApplication3/Views/Blacklist/Check.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmxhY2tsaXN0XENoZWNrLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/c\#project/WebApplication3/WebApplication3/Views/Blacklist/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmxhY2tsaXN0XENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/c\#project/WebApplication3/WebApplication3/Views/Blacklist/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmxhY2tsaXN0XERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/c\#project/WebApplication3/WebApplication3/Views/Blacklist/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmxhY2tsaXN0XERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/c\#project/WebApplication3/WebApplication3/Views/Blacklist/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmxhY2tsaXN0XEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/c\#project/WebApplication3/WebApplication3/Views/Blacklist/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmxhY2tsaXN0XEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/c\#project/WebApplication3/WebApplication3/Views/CreditsAdmin/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlZGl0c0FkbWluXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/c\#project/WebApplication3/WebApplication3/Views/CreditsAdmin/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlZGl0c0FkbWluXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/c\#project/WebApplication3/WebApplication3/Views/CreditsAdmin/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlZGl0c0FkbWluXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/c\#project/WebApplication3/WebApplication3/Views/Credits/Apply.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlZGl0c1xBcHBseS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

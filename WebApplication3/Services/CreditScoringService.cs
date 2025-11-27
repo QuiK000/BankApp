@@ -30,27 +30,63 @@ namespace WebApplication3.Services
             if (user == null)
                 throw new Exception("Користувача не знайдено");
 
+            // Перевірка чорного списку
+            var isBlacklisted = await IsInBlacklist(user.TaxNumber ?? "", user.Email, user.PhoneNumber);
+            
             var score = new CreditScore
             {
                 UserId = userId,
                 User = user
             };
 
+            // Якщо в чорному списку - мінімальні бали
+            if (isBlacklisted)
+            {
+                score.AgeScore = 0;
+                score.CreditHistoryScore = 0;
+                score.IncomeScore = 0;
+                score.EmploymentScore = 0;
+                score.ExistingDebtsScore = 0;
+                score.TotalScore = 0;
+                score.Rating = "E";
+                score.DefaultProbability = 100m;
+                score.RecommendedMaxAmount = 0;
+                score.Notes = "Особа знаходиться в чорному списку банку";
+                return score;
+            }
+
+            // Розрахунок балів
             score.AgeScore = CalculateAgeScore(user.DateOfBirth);
             score.CreditHistoryScore = await CalculateCreditHistoryScore(userId);
             score.IncomeScore = CalculateIncomeScore(user);
             score.EmploymentScore = CalculateEmploymentScore(user);
             score.ExistingDebtsScore = await CalculateExistingDebtsScore(userId);
             
+            // Загальний бал
             score.TotalScore = score.AgeScore + score.CreditHistoryScore + 
                               score.IncomeScore + score.EmploymentScore + 
                               score.ExistingDebtsScore;
             
+            // Рейтинг та ймовірність дефолту
             (score.Rating, score.DefaultProbability) = CalculateRating(score.TotalScore);
             
+            // Рекомендована сума
             score.RecommendedMaxAmount = await GetRecommendedAmount(score.TotalScore);
 
             score.CalculationDate = DateTime.Now;
+
+            // Видаляємо старий скоринг якщо є
+            var existingScore = await _context.CreditScores
+                .FirstOrDefaultAsync(cs => cs.UserId == userId);
+
+            if (existingScore != null)
+            {
+                _context.CreditScores.Remove(existingScore);
+            }
+
+            // Зберігаємо новий
+            _context.CreditScores.Add(score);
+            await _context.SaveChangesAsync();
 
             return score;
         }
@@ -58,13 +94,17 @@ namespace WebApplication3.Services
         private int CalculateAgeScore(DateTime? dateOfBirth)
         {
             if (!dateOfBirth.HasValue)
-                return 50;
+                return 50; // Мінімальний бал без дати народження
 
             var age = DateTime.Now.Year - dateOfBirth.Value.Year;
             
+            // Коригування якщо день народження ще не настав цього року
+            if (DateTime.Now < dateOfBirth.Value.AddYears(age))
+                age--;
+            
             if (age < 21) return 50;
             if (age >= 21 && age <= 25) return 80;
-            if (age >= 26 && age <= 35) return 150;
+            if (age >= 26 && age <= 35) return 150;  // Найкращий вік
             if (age >= 36 && age <= 50) return 130;
             if (age >= 51 && age <= 65) return 100;
             
@@ -78,18 +118,21 @@ namespace WebApplication3.Services
                 .ToListAsync();
 
             if (!applications.Any())
-                return 100;
+                return 100; // Нова історія - середній бал
 
             var totalApps = applications.Count;
             var approvedApps = applications.Count(a => a.Status == ApplicationStatus.Approved || 
                                                       a.Status == ApplicationStatus.Issued);
             var rejectedApps = applications.Count(a => a.Status == ApplicationStatus.Rejected);
 
+            // Відсоток схвалених
             var approvalRate = (double)approvedApps / totalApps;
             var baseScore = (int)(approvalRate * 200);
 
+            // Бонус за досвід
             var experienceBonus = Math.Min(approvedApps * 20, 100);
             
+            // Штраф за відхилення
             var rejectionPenalty = rejectedApps * 15;
 
             var finalScore = baseScore + experienceBonus - rejectionPenalty;
@@ -100,6 +143,7 @@ namespace WebApplication3.Services
         {
             var score = 0;
 
+            // Бали за заповненість профілю (індикатор надійності)
             if (!string.IsNullOrEmpty(user.FullName)) score += 50;
             if (!string.IsNullOrEmpty(user.PhoneNumber)) score += 50;
             if (!string.IsNullOrEmpty(user.Address)) score += 50;
@@ -110,14 +154,15 @@ namespace WebApplication3.Services
 
         private int CalculateEmploymentScore(ApplicationUser user)
         {
+            // Використовуємо тривалість реєстрації як індикатор стабільності
             var accountAge = (DateTime.Now - user.RegistrationDate).Days;
             
-            if (accountAge < 30) return 50;
-            if (accountAge >= 30 && accountAge < 90) return 80;
-            if (accountAge >= 90 && accountAge < 180) return 110;
-            if (accountAge >= 180 && accountAge < 365) return 130;
+            if (accountAge < 30) return 50;       // Менше місяця
+            if (accountAge < 90) return 80;       // 1-3 місяці
+            if (accountAge < 180) return 110;     // 3-6 місяців
+            if (accountAge < 365) return 130;     // 6-12 місяців
             
-            return 150;
+            return 150; // Більше року
         }
 
         private async Task<int> CalculateExistingDebtsScore(string userId)
@@ -129,16 +174,17 @@ namespace WebApplication3.Services
                 .ToListAsync();
 
             if (!activeApplications.Any())
-                return 100;
+                return 100; // Немає боргів - добре
 
             var totalDebt = activeApplications.Sum(a => a.Amount);
             
+            // Чим більше боргів, тим менше балів
             if (totalDebt < 50000) return 90;
             if (totalDebt < 100000) return 70;
             if (totalDebt < 200000) return 50;
             if (totalDebt < 500000) return 30;
             
-            return 10;
+            return 10; // Дуже великий борг
         }
 
         private (string rating, decimal probability) CalculateRating(int totalScore)
@@ -167,25 +213,28 @@ namespace WebApplication3.Services
 
         public async Task<bool> IsInBlacklist(string taxNumber, string? email = null, string? phone = null)
         {
-            var query = _context.BlacklistEntries
-                .Where(b => b.IsActive);
-
+            // Перевірка по ІПН
             if (!string.IsNullOrEmpty(taxNumber))
             {
-                if (await query.AnyAsync(b => b.TaxNumber == taxNumber))
-                    return true;
+                var byTaxNumber = await _context.BlacklistEntries
+                    .AnyAsync(b => b.IsActive && b.TaxNumber == taxNumber);
+                if (byTaxNumber) return true;
             }
             
+            // Перевірка по email
             if (!string.IsNullOrEmpty(email))
             {
-                if (await query.AnyAsync(b => b.Email == email))
-                    return true;
+                var byEmail = await _context.BlacklistEntries
+                    .AnyAsync(b => b.IsActive && b.Email == email);
+                if (byEmail) return true;
             }
 
+            // Перевірка по телефону
             if (!string.IsNullOrEmpty(phone))
             {
-                if (await query.AnyAsync(b => b.Phone == phone))
-                    return true;
+                var byPhone = await _context.BlacklistEntries
+                    .AnyAsync(b => b.IsActive && b.Phone == phone);
+                if (byPhone) return true;
             }
 
             return false;
@@ -197,21 +246,21 @@ namespace WebApplication3.Services
             if (user == null)
                 return false;
             
+            // Перевірка чорного списку - критично важливо!
             if (await IsInBlacklist(user.TaxNumber ?? "", user.Email, user.PhoneNumber))
                 return false;
 
-            var creditScore = await CalculateCreditScore(userId);
-            
-            var existingScore = await _context.CreditScores
-                .FirstOrDefaultAsync(cs => cs.UserId == userId);
+            // Розрахунок або отримання існуючого скорингу
+            var creditScore = await _context.CreditScores
+                .Where(cs => cs.UserId == userId)
+                .OrderByDescending(cs => cs.CalculationDate)
+                .FirstOrDefaultAsync();
 
-            if (existingScore != null)
+            // Якщо скоринг старий (більше 30 днів) або немає - перераховуємо
+            if (creditScore == null || (DateTime.Now - creditScore.CalculationDate).TotalDays > 30)
             {
-                _context.CreditScores.Remove(existingScore);
+                creditScore = await CalculateCreditScore(userId);
             }
-
-            _context.CreditScores.Add(creditScore);
-            await _context.SaveChangesAsync();
 
             // Перевірка рекомендованої суми
             return requestedAmount <= creditScore.RecommendedMaxAmount;

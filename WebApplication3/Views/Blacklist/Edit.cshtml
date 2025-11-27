@@ -1,0 +1,125 @@
+﻿@model WebApplication3.Models.BlacklistEntry
+
+@{
+    ViewData["Title"] = "Редагувати запис";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Редагувати запис: @Model.FullName
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="AddedDate" />
+                        <input type="hidden" asp-for="AddedBy" />
+                        <input type="hidden" asp-for="IsActive" />
+                        <input type="hidden" asp-for="RemovedDate" />
+                        <input type="hidden" asp-for="RemovalReason" />
+                        
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        
+                        <h5 class="fw-bold mb-3 text-primary">
+                            <i class="fas fa-user me-2"></i>
+                            Особисті дані
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="FullName" class="form-label fw-bold"></label>
+                                <input asp-for="FullName" class="form-control" />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label asp-for="TaxNumber" class="form-label fw-bold"></label>
+                                <input asp-for="TaxNumber" class="form-control" maxlength="10" readonly 
+                                       style="background-color: #f8f9fa;" />
+                                <span asp-validation-for="TaxNumber" class="text-danger small"></span>
+                                <small class="text-muted">ІПН не можна змінити</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="Phone" class="form-label"></label>
+                                <input asp-for="Phone" class="form-control" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label asp-for="DateOfBirth" class="form-label"></label>
+                                <input asp-for="DateOfBirth" class="form-control" type="date" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="fw-bold mb-3 text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Причина блокування
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Reason" class="form-label fw-bold"></label>
+                                <select asp-for="Reason" class="form-select" asp-items="Html.GetEnumSelectList<BlacklistReason>()">
+                                </select>
+                                <span asp-validation-for="Reason" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label asp-for="DebtAmount" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="DebtAmount" class="form-control" type="number" step="0.01" />
+                                    <span class="input-group-text">грн</span>
+                                </div>
+                                <span asp-validation-for="DebtAmount" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold"></label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label asp-for="Notes" class="form-label"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>
+                                Скасувати
+                            </a>
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-save me-2"></i>
+                                Зберегти зміни
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -47,6 +47,13 @@
                             </a>
                         </li>
                         
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Credits" asp-action="CheckEligibility">
+                                <i class="fas fa-user-check me-1"></i>
+                                Мій рейтинг
+                            </a>
+                        </li>
+                        
                         @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
                         {
                             <li class="nav-item dropdown">
@@ -74,16 +81,25 @@
                                             Клієнти
                                         </a>
                                     </li>
-                                    <li><a class="dropdown-item" asp-controller="CreditsAdmin" asp-action="Index">
-                                        <i class="fas fa-credit-card me-2"></i>Управління кредитами
-                                    </a></li>
-                                    <li><a class="dropdown-item" asp-controller="Blacklist" asp-action="Index">
-                                        <i class="fas fa-ban me-2"></i>Чорний список
-                                    </a></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="CreditsAdmin" asp-action="Index">
+                                            <i class="fas fa-credit-card me-2"></i>
+                                            Управління кредитами
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Blacklist" asp-action="Index">
+                                            <i class="fas fa-ban me-2"></i>
+                                            Чорний список
+                                        </a>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" asp-controller="Analytics" asp-action="Scoring">
-                                        <i class="fas fa-chart-line me-2"></i>Кредитний скоринг
-                                    </a></li>d
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Analytics" asp-action="Scoring">
+                                            <i class="fas fa-chart-line me-2"></i>
+                                            Кредитний скоринг
+                                        </a>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item" asp-controller="Admin" asp-action="Reports">

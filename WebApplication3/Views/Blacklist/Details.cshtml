@@ -1,0 +1,218 @@
+﻿@model WebApplication3.Models.BlacklistEntry
+
+@{
+    ViewData["Title"] = $"Деталі: {Model.FullName}";
+}
+
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Чорний список</a></li>
+            <li class="breadcrumb-item active">@Model.FullName</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="avatar-large mb-3 @(Model.IsActive ? "bg-danger" : "bg-success")">
+                        <i class="fas fa-user fa-4x text-white"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">@Model.FullName</h4>
+                    <span class="badge @(Model.IsActive ? "bg-danger" : "bg-success") fs-6 mb-3">
+                        @(Model.IsActive ? "АКТИВНИЙ" : "ЗНЯТО З БЛОКУВАННЯ")
+                    </span>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2">
+                        @if (Model.IsActive)
+                        {
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#removeModal">
+                                <i class="fas fa-check me-2"></i>
+                                Зняти з блокування
+                            </button>
+                        }
+                        else
+                        {
+                            <form asp-action="Restore" asp-route-id="@Model.Id" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-warning w-100">
+                                    <i class="fas fa-redo me-2"></i>
+                                    Відновити блокування
+                                </button>
+                            </form>
+                        }
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-2"></i>
+                            Редагувати
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Назад
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        Особиста інформація
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="text-muted small">ІПН</label>
+                            <div class="fw-bold"><code>@Model.TaxNumber</code></div>
+                        </div>
+                        @if (Model.DateOfBirth.HasValue)
+                        {
+                            <div class="col-md-6">
+                                <label class="text-muted small">Дата народження</label>
+                                <div class="fw-bold">@Model.DateOfBirth.Value.ToString("dd.MM.yyyy")</div>
+                            </div>
+                        }
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Phone) || !string.IsNullOrEmpty(Model.Email))
+                    {
+                        <div class="row mb-3">
+                            @if (!string.IsNullOrEmpty(Model.Phone))
+                            {
+                                <div class="col-md-6">
+                                    <label class="text-muted small">Телефон</label>
+                                    <div class="fw-bold"><i class="fas fa-phone me-2"></i>@Model.Phone</div>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Email))
+                            {
+                                <div class="col-md-6">
+                                    <label class="text-muted small">Email</label>
+                                    <div class="fw-bold"><i class="fas fa-envelope me-2"></i>@Model.Email</div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Причина блокування
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="text-muted small">Тип порушення</label>
+                            <div><span class="badge bg-danger fs-6">@Model.Reason</span></div>
+                        </div>
+                        @if (Model.DebtAmount.HasValue)
+                        {
+                            <div class="col-md-6">
+                                <label class="text-muted small">Сума боргу</label>
+                                <div class="fw-bold text-danger fs-5">@Model.DebtAmount.Value.ToString("N2") грн</div>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="text-muted small">Опис</label>
+                        <div class="alert alert-light mb-0">@Model.Description</div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div>
+                            <label class="text-muted small">Примітки</label>
+                            <div class="alert alert-light mb-0">@Model.Notes</div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history text-info me-2"></i>
+                        Історія
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted small">Додано до списку</label>
+                        <div class="fw-bold">
+                            @Model.AddedDate.ToString("dd.MM.yyyy HH:mm")
+                            <small class="text-muted">(@Model.AddedBy)</small>
+                        </div>
+                    </div>
+                    
+                    @if (!Model.IsActive && Model.RemovedDate.HasValue)
+                    {
+                        <div class="mb-3">
+                            <label class="text-muted small">Знято з блокування</label>
+                            <div class="fw-bold">@Model.RemovedDate.Value.ToString("dd.MM.yyyy HH:mm")</div>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(Model.RemovalReason))
+                        {
+                            <div>
+                                <label class="text-muted small">Причина зняття</label>
+                                <div class="alert alert-success mb-0">@Model.RemovalReason</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal для зняття з блокування -->
+<div class="modal fade" id="removeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Remove" asp-route-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Зняти з чорного списку</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Ви впевнені, що хочете зняти <strong>@Model.FullName</strong> з чорного списку?</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Причина зняття *</label>
+                        <textarea name="removalReason" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check me-2"></i>
+                        Підтвердити
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+</style>

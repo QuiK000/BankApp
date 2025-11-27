@@ -1,0 +1,70 @@
+﻿@model IEnumerable<WebApplication3.Models.Credit>
+
+@{
+    ViewData["Title"] = "Управління кредитами";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-credit-card text-primary me-2"></i>
+            Управління кредитами
+        </h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>
+            Додати кредит
+        </a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var credit in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-hover border-0">
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <i class="fas @credit.IconClass fa-3x text-primary"></i>
+                        </div>
+                        
+                        <h5 class="card-title fw-bold text-center">@credit.Name</h5>
+                        <p class="card-text text-muted small">@credit.Description</p>
+                        
+                        <hr>
+                        
+                        <div class="mb-2">
+                            <small class="text-muted">Ставка:</small>
+                            <strong class="text-success float-end">@credit.InterestRate%</strong>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">Сума:</small>
+                            <strong class="float-end">@credit.MinAmount.ToString("N0") - @credit.MaxAmount.ToString("N0")</strong>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Термін:</small>
+                            <strong class="float-end">@credit.MinTermMonths - @credit.MaxTermMonths міс.</strong>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a asp-action="Details" asp-route-id="@credit.Id" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye me-1"></i>
+                                Деталі
+                            </a>
+                            <a asp-action="Statistics" asp-route-id="@credit.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-chart-bar me-1"></i>
+                                Статистика
+                            </a>
+                            <div class="btn-group">
+                                <a asp-action="Edit" asp-route-id="@credit.Id" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@credit.Id" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

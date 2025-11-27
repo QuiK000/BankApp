@@ -1,0 +1,131 @@
+﻿@{
+    ViewData["Title"] = "Перевірка особи";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        Перевірка особи в чорному списку
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="alert alert-info border-0 mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Введіть ІПН, email або телефон для перевірки
+                    </div>
+
+                    <form id="checkForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">ІПН *</label>
+                            <input type="text" id="taxNumber" class="form-control" 
+                                   placeholder="1234567890" maxlength="10" required />
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" id="email" class="form-control" 
+                                       placeholder="example@email.com" />
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Телефон</label>
+                                <input type="text" id="phone" class="form-control" 
+                                       placeholder="+380501234567" />
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>
+                                Перевірити
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div id="result" class="mt-4" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('checkForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const taxNumber = document.getElementById('taxNumber').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            
+            const response = await fetch('/Blacklist/CheckPerson', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `taxNumber=${encodeURIComponent(taxNumber)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`
+            });
+            
+            const data = await response.json();
+            const resultDiv = document.getElementById('result');
+            
+            if (data.isBlacklisted) {
+                let html = `
+                    <div class="alert alert-danger border-0 shadow-sm">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-exclamation-triangle fa-3x"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">${data.message}</h5>
+                                <div class="mt-3">
+                `;
+                
+                data.entries.forEach(entry => {
+                    html += `
+                        <div class="card bg-white border-danger mb-2">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-danger">${entry.fullName}</h6>
+                                <div class="small">
+                                    <strong>Причина:</strong> ${entry.reason}<br>
+                                    <strong>Опис:</strong> ${entry.description}<br>
+                                    <strong>Дата додавання:</strong> ${new Date(entry.addedDate).toLocaleDateString('uk-UA')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultDiv.innerHTML = html;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-success border-0 shadow-sm">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-check-circle fa-3x"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">${data.message}</h5>
+                                <p class="mb-0">Особу можна допустити до отримання кредиту</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            resultDiv.style.display = 'block';
+        });
+    </script>
+}
