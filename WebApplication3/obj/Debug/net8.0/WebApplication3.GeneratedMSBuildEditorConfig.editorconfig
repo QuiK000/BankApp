@@ -114,12 +114,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlZGl0c0FkbWluXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/c\#project/WebApplication3/WebApplication3/Views/CreditsAdmin/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlZGl0c0FkbWluXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/c\#project/WebApplication3/WebApplication3/Views/CreditsAdmin/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlZGl0c0FkbWluXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/c\#project/WebApplication3/WebApplication3/Views/CreditsAdmin/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlZGl0c0FkbWluXEVkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/c\#project/WebApplication3/WebApplication3/Views/CreditsAdmin/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlZGl0c0FkbWluXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/c\#project/WebApplication3/WebApplication3/Views/CreditsAdmin/Statistics.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlZGl0c0FkbWluXFN0YXRpc3RpY3MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/c\#project/WebApplication3/WebApplication3/Views/Credits/Apply.cshtml]

@@ -1,0 +1,427 @@
+﻿@model WebApplication3.Controllers.CreditStatisticsViewModel
+
+@{
+    ViewData["Title"] = $"Статистика: {Model.Credit.Name}";
+}
+
+<div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Index">Управління кредитами</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="Details" asp-route-id="@Model.Credit.Id">@Model.Credit.Name</a>
+            </li>
+            <li class="breadcrumb-item active">Статистика</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            <i class="fas fa-chart-bar text-primary me-2"></i>
+            Статистика: @Model.Credit.Name
+        </h1>
+        <div>
+            <a asp-action="Details" asp-route-id="@Model.Credit.Id" class="btn btn-outline-primary">
+                <i class="fas fa-info-circle me-2"></i>
+                Деталі кредиту
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Назад
+            </a>
+        </div>
+    </div>
+
+    <!-- Загальна статистика -->
+    <div class="row mb-4">
+        <div class="col-lg-2 col-md-4 mb-3">
+            <div class="card border-0 shadow-sm bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-alt fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50 small">Всього заявок</h6>
+                    <h2 class="fw-bold mb-0">@Model.TotalApplications</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 mb-3">
+            <div class="card border-0 shadow-sm bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50 small">Нові</h6>
+                    <h2 class="fw-bold mb-0">@Model.NewApplications</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 mb-3">
+            <div class="card border-0 shadow-sm bg-warning text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50 small">На розгляді</h6>
+                    <h2 class="fw-bold mb-0">@Model.UnderReviewApplications</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 mb-3">
+            <div class="card border-0 shadow-sm bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50 small">Схвалено</h6>
+                    <h2 class="fw-bold mb-0">@Model.ApprovedApplications</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 mb-3">
+            <div class="card border-0 shadow-sm bg-danger text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-times-circle fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50 small">Відхилено</h6>
+                    <h2 class="fw-bold mb-0">@Model.RejectedApplications</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 mb-3">
+            <div class="card border-0 shadow-sm bg-dark text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-hand-holding-usd fa-2x mb-2 opacity-75"></i>
+                    <h6 class="text-white-50 small">Видано</h6>
+                    <h2 class="fw-bold mb-0">@Model.IssuedApplications</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фінансова статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-2x text-success mb-3"></i>
+                    <h6 class="text-muted mb-2">Загальна сума заявок</h6>
+                    <h3 class="fw-bold text-success mb-0">@Model.TotalAmount.ToString("N0") ₴</h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fas fa-calculator fa-2x text-primary mb-3"></i>
+                    <h6 class="text-muted mb-2">Середня сума заявки</h6>
+                    <h3 class="fw-bold text-primary mb-0">@Model.AverageAmount.ToString("N0") ₴</h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt fa-2x text-info mb-3"></i>
+                    <h6 class="text-muted mb-2">Середній термін</h6>
+                    <h3 class="fw-bold text-info mb-0">@Model.AverageTerm.ToString("F1") міс.</h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fas fa-percentage fa-2x text-warning mb-3"></i>
+                    <h6 class="text-muted mb-2">Відсоток схвалення</h6>
+                    <h3 class="fw-bold text-warning mb-0">@Model.ApprovalRate.ToString("F1")%</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графіки -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie text-primary me-2"></i>
+                        Розподіл заявок по статусах
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar text-success me-2"></i>
+                        Конверсія заявок
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4 text-center">
+                        <div class="display-3 fw-bold text-success mb-2">@Model.ApprovalRate.ToString("F1")%</div>
+                        <p class="text-muted">Відсоток схвалення заявок</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 fw-bold text-success mb-1">@Model.ApprovedApplications</div>
+                                <small class="text-muted">Схвалено</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 fw-bold text-danger mb-1">@Model.RejectedApplications</div>
+                                <small class="text-muted">Відхилено</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="progress" style="height: 30px;">
+                        @{
+                            var approvalPercentage = Model.TotalApplications > 0 
+                                ? (Model.ApprovedApplications * 100.0 / Model.TotalApplications) 
+                                : 0;
+                            var rejectedPercentage = Model.TotalApplications > 0 
+                                ? (Model.RejectedApplications * 100.0 / Model.TotalApplications) 
+                                : 0;
+                        }
+                        <div class="progress-bar bg-success" style="width: @approvalPercentage%">
+                            @Model.ApprovedApplications
+                        </div>
+                        <div class="progress-bar bg-danger" style="width: @rejectedPercentage%">
+                            @Model.RejectedApplications
+                        </div>
+                        <div class="progress-bar bg-secondary" style="width: @(100 - approvalPercentage - rejectedPercentage)%">
+                            Інші
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Останні заявки -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-history text-info me-2"></i>
+                Останні 10 заявок
+            </h5>
+            <a asp-controller="Admin" asp-action="Applications" 
+               asp-route-creditId="@Model.Credit.Id" 
+               class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-list me-1"></i>
+                Всі заявки
+            </a>
+        </div>
+        <div class="card-body">
+            @if (Model.RecentApplications.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>№</th>
+                                <th>Дата</th>
+                                <th>Клієнт</th>
+                                <th>Сума</th>
+                                <th>Термін</th>
+                                <th>Статус</th>
+                                <th class="text-center">Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var app in Model.RecentApplications)
+                            {
+                                <tr>
+                                    <td><strong>#@app.Id</strong></td>
+                                    <td>
+                                        <small>@app.ApplicationDate.ToString("dd.MM.yyyy")</small><br>
+                                        <small class="text-muted">@app.ApplicationDate.ToString("HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        <strong>@app.CustomerName</strong>
+                                        @if (app.User != null)
+                                        {
+                                            <br><small class="text-muted">@app.User.Email</small>
+                                        }
+                                    </td>
+                                    <td><strong>@app.Amount.ToString("N0") ₴</strong></td>
+                                    <td>@app.TermMonths міс.</td>
+                                    <td>
+                                        <span class="badge @GetStatusClass(app.Status)">
+                                            @GetStatusName(app.Status)
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-controller="Admin" asp-action="ApplicationDetails" 
+                                           asp-route-id="@app.Id" 
+                                           class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-inbox fa-4x mb-3"></i>
+                    <h5>Заявок поки немає</h5>
+                    <p>Заявки по цьому кредиту з'являться тут</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Insights -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-primary border-0 shadow-sm">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-lightbulb fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-3">Ключові показники та рекомендації:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold">📊 Статистика:</h6>
+                                <ul class="mb-0">
+                                    <li>Середня заявка: <strong>@Model.AverageAmount.ToString("N0") ₴</strong> на <strong>@Model.AverageTerm.ToString("F0") міс.</strong></li>
+                                    <li>Конверсія: <strong>@Model.ApprovalRate.ToString("F1")%</strong></li>
+                                    <li>Всього видано: <strong>@Model.IssuedApplications</strong> кредитів</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold">💡 Рекомендації:</h6>
+                                <ul class="mb-0">
+                                    @if (Model.ApprovalRate < 50)
+                                    {
+                                        <li class="text-danger">⚠️ Низький відсоток схвалення - перегляньте умови</li>
+                                    }
+                                    else if (Model.ApprovalRate > 80)
+                                    {
+                                        <li class="text-success">✅ Відмінна конверсія - продукт популярний</li>
+                                    }
+                                    @if (Model.TotalApplications < 10)
+                                    {
+                                        <li class="text-warning">📢 Мало заявок - потрібна реклама</li>
+                                    }
+                                    @if (Model.NewApplications > Model.ApprovedApplications)
+                                    {
+                                        <li class="text-info">⏱️ Багато нових заявок - прискорте обробку</li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusClass(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "bg-info",
+            ApplicationStatus.UnderReview => "bg-warning",
+            ApplicationStatus.DocumentsRequired => "bg-warning",
+            ApplicationStatus.DocumentsVerification => "bg-warning",
+            ApplicationStatus.Approved => "bg-success",
+            ApplicationStatus.Rejected => "bg-danger",
+            ApplicationStatus.Issued => "bg-primary",
+            ApplicationStatus.Cancelled => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusName(ApplicationStatus status)
+    {
+        return status switch
+        {
+            ApplicationStatus.New => "Нова",
+            ApplicationStatus.UnderReview => "Розгляд",
+            ApplicationStatus.DocumentsRequired => "Документи",
+            ApplicationStatus.DocumentsVerification => "Перевірка",
+            ApplicationStatus.Approved => "Схвалено",
+            ApplicationStatus.Rejected => "Відхилено",
+            ApplicationStatus.Issued => "Видано",
+            ApplicationStatus.Cancelled => "Скасовано",
+            _ => status.ToString()
+        };
+    }
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Графік по статусах
+        const statusData = {
+            labels: ['Нові', 'На розгляді', 'Схвалено', 'Відхилено', 'Видано'],
+            datasets: [{
+                data: [
+                    @Model.NewApplications,
+                    @Model.UnderReviewApplications,
+                    @Model.ApprovedApplications,
+                    @Model.RejectedApplications,
+                    @Model.IssuedApplications
+                ],
+                backgroundColor: [
+                    'rgba(6, 182, 212, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(37, 99, 235, 0.8)'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        };
+
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: statusData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

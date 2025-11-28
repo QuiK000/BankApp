@@ -1,0 +1,213 @@
+﻿@model WebApplication3.Models.Credit
+
+@{
+    ViewData["Title"] = "Видалити кредит";
+    var activeApplicationsCount = ViewBag.ActiveApplicationsCount as int? ?? 0;
+    var activeCreditsCount = ViewBag.ActiveCreditsCount as int? ?? 0;
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-danger text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Підтвердження видалення кредитного продукту
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="alert alert-danger border-0 mb-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-exclamation-circle fa-3x"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">УВАГА! Критична операція!</h5>
+                                <p class="mb-0">
+                                    Ви дійсно бажаєте <strong>ВИДАЛИТИ</strong> кредитний продукт 
+                                    <strong>"@Model.Name"</strong>?
+                                    <br><br>
+                                    Цю дію <strong>НЕМОЖЛИВО</strong> буде відмінити!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Інформація про кредит -->
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">Інформація про кредитний продукт:</h6>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <i class="fas @Model.IconClass fa-3x text-primary mb-2"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="mb-2">
+                                        <strong>Назва:</strong> @Model.Name
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Процентна ставка:</strong> @Model.InterestRate%
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Діапазон сум:</strong> @Model.MinAmount.ToString("N0") - @Model.MaxAmount.ToString("N0") грн
+                                    </div>
+                                    <div>
+                                        <strong>Діапазон термінів:</strong> @Model.MinTermMonths - @Model.MaxTermMonths міс.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="mb-2">
+                                <strong>Опис:</strong>
+                                <div class="p-2 bg-white rounded mt-1">@Model.Description</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Попередження про активні заявки -->
+                    @if (activeApplicationsCount > 0 || activeCreditsCount > 0)
+                    {
+                        <div class="alert alert-warning border-0 mb-4">
+                            <h6 class="fw-bold mb-3">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Знайдено пов'язані дані!
+                            </h6>
+                            
+                            @if (activeApplicationsCount > 0)
+                            {
+                                <div class="mb-2">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    <strong>Кількість заявок:</strong> 
+                                    <span class="badge bg-warning text-dark">@activeApplicationsCount</span>
+                                </div>
+                            }
+                            
+                            @if (activeCreditsCount > 0)
+                            {
+                                <div class="mb-2">
+                                    <i class="fas fa-credit-card me-2"></i>
+                                    <strong>Активних кредитів у клієнтів:</strong> 
+                                    <span class="badge bg-danger">@activeCreditsCount</span>
+                                </div>
+                            }
+
+                            <hr class="my-3">
+
+                            <div class="alert alert-danger border-0 mb-0">
+                                <i class="fas fa-ban me-2"></i>
+                                <strong>Неможливо видалити кредит з активними заявками!</strong>
+                                <br><br>
+                                <small>
+                                    Спочатку необхідно:
+                                    <ul class="mb-0 mt-2">
+                                        <li>Завершити всі активні кредити</li>
+                                        <li>Обробити всі схвалені заявки</li>
+                                        <li>Або відхилити/скасувати активні заявки</li>
+                                    </ul>
+                                </small>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success border-0 mb-4">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Перевірка пройшла успішно</strong>
+                            <br>
+                            <small>Кредит не має активних заявок і може бути безпечно видалений</small>
+                        </div>
+                    }
+
+                    <!-- Що буде видалено -->
+                    <div class="card border-danger mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-trash me-2"></i>
+                                Що буде видалено:
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Кредитний продукт "@Model.Name"</li>
+                                <li>Всі налаштування та параметри кредиту</li>
+                                <li>Історичні дані про заявки (архівовані)</li>
+                                <li>Продукт зникне зі списку доступних кредитів</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки дій -->
+                    @if (activeApplicationsCount > 0 || activeCreditsCount > 0)
+                    {
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Назад до деталей
+                            </a>
+                            <a asp-controller="Admin" asp-action="Applications" 
+                               asp-route-creditId="@Model.Id" 
+                               class="btn btn-warning btn-lg">
+                                <i class="fas fa-file-alt me-2"></i>
+                                Переглянути заявки
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            
+                            <div class="form-check mb-4 p-3 bg-light rounded">
+                                <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                                <label class="form-check-label fw-bold" for="confirmDelete">
+                                    <i class="fas fa-check-square me-2 text-danger"></i>
+                                    Я розумію, що ця дія є незворотною і підтверджую видалення кредитного продукту
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>
+                                    Скасувати
+                                </a>
+                                <button type="submit" class="btn btn-danger btn-lg" id="deleteButton" disabled>
+                                    <i class="fas fa-trash me-2"></i>
+                                    ПІДТВЕРДИТИ ВИДАЛЕННЯ
+                                </button>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <!-- Додаткова інформація -->
+            <div class="alert alert-info border-0 mt-3">
+                <h6 class="fw-bold mb-2">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Альтернативні варіанти:
+                </h6>
+                <ul class="mb-0 small">
+                    <li>Якщо кредит застарів, можна створити нову версію з оновленими умовами</li>
+                    <li>Можна тимчасово деактивувати кредит замість повного видалення (майбутня функція)</li>
+                    <li>Рекомендується спочатку експортувати всі дані для звітності</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Активувати кнопку видалення тільки після підтвердження
+        document.getElementById('confirmDelete')?.addEventListener('change', function() {
+            document.getElementById('deleteButton').disabled = !this.checked;
+        });
+    </script>
+}
